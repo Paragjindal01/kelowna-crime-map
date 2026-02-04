@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CrimeType {
+  vehicle_theft
+  theft_from_vehicle
+  residential_break_enter
+  commercial_break_enter
+  shoplifting
+  package_theft
+  bicycle_theft
+  vandalism_mischief
+  trespassing
+  suspicious_activity
+  assault
+  harassment_threats
+}
+
+enum ReportStatus {
+  pending
+  approved
+  rejected
+}
+
+model Report {
+  id          String       @id @default(cuid())
+  type        CrimeType
+  status      ReportStatus @default(pending)
+  occurredAt  DateTime
+  lat         Float
+  lng         Float
+  address     String?
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([status, occurredAt])
+  @@index([lat, lng])
+}
