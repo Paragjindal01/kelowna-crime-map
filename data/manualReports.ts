@@ -1,4 +1,8 @@
-export type Report = {
+import fs from "fs";
+import path from "path";
+import { parse } from "csv-parse/sync";
+
+export type ManualReport = {
   id: string;
   type: string;
   status: "approved";
@@ -9,43 +13,31 @@ export type Report = {
   description: string;
 };
 
-const CRIME_TYPES = [
-  "vehicle_theft",
-  "bicycle_theft",
-  "break_enter",
-  "assault",
-  "mischief",
-];
-
-// Kelowna bounds (rough but realistic)
-const LAT_MIN = 49.82;
-const LAT_MAX = 49.95;
-const LNG_MIN = -119.62;
-const LNG_MAX = -119.35;
-
-function randomBetween(min: number, max: number) {
-  return Math.random() * (max - min) + min;
-}
-
-function randomDateWithin(days: number) {
-  const now = Date.now();
-  const past = now - days * 24 * 60 * 60 * 1000;
-  return new Date(randomBetween(past, now)).toISOString();
-}
-
-function randomItem<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-export const manualReports: Report[] = Array.from({ length: 120 }).map(
-  (_, i) => ({
-    id: `manual-${i + 1}`,
-    type: randomItem(CRIME_TYPES),
-    status: "approved",
-    occurredAt: randomDateWithin(120),
-    lat: randomBetween(LAT_MIN, LAT_MAX),
-    lng: randomBetween(LNG_MIN, LNG_MAX),
-    address: "Kelowna, BC",
-    description: "Reported incident (sample data)",
-  })
+const filePath = path.join(
+  process.cwd(),
+  "data",
+  "Kelownacrimejan.csv"
 );
+
+const fileContent = fs.readFileSync(filePath, "utf-8");
+
+const records: any[] = parse(fileContent, {
+  columns: true,
+  skip_empty_lines: true,
+});
+
+export const manualReports = records
+  .map((row: any, index: number): ManualReport => {
+    return {
+      id: row.incident_id || `csv-${index + 1}`,
+      type: row.crime_type || "unknown",
+      status: "approved",
+      occurredAt: new Date(row.incident_date).toISOString(),
+      lat: parseFloat(row.latitude),
+      lng: parseFloat(row.longitude),
+      address: row.location_name || "Kelowna, BC",
+      description:
+        row.location_text || row.crime_type || "Kelowna crime",
+    };
+  })
+  .filter((r) => !isNaN(r.lat) && !isNaN(r.lng));

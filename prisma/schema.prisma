@@ -33,12 +33,18 @@ model Report {
   type        CrimeType
   status      ReportStatus @default(pending)
   occurredAt  DateTime
-  lat         Float
-  lng         Float
-  address     String?
-  description String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  lat                 Float
+  lng                 Float
+  address             String?
+  description         String?
+  isVerified          Boolean      @default(false)
+  sourceId            String?
+  sourceName          String?
+  sourceUrl           String?
+  locationApproximate Boolean      @default(false)
+  privacyLevel        String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
 
   @@index([status, occurredAt])
   @@index([lat, lng])

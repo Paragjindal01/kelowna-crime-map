@@ -1,0 +1,31 @@
+incident_id,incident_date,crime_type,location_name,location_text,latitude,longitude,precision_level
+castanet_594101,2026-01-02,Break & Enter,Downtown Bernard Ave,Bernard Ave downtown Kelowna,49.8862,-119.4945,street_segment
+castanet_594155,2026-01-03,Theft from Vehicle,Lawrence Ave parkade,Lawrence Ave parkade,49.8879,-119.4931,area
+castanet_594233,2026-01-04,Assault,Leon Ave,Leon Ave corridor,49.8865,-119.497,street_segment
+castanet_594301,2026-01-05,Shoplifting,Orchard Park Mall,Orchard Park Mall,49.8796,-119.4396,place
+castanet_594355,2026-01-06,Suspicious Fire,Sutherland Ave,Sutherland Ave area,49.8895,-119.4684,street_segment
+castanet_594402,2026-01-07,Drug Arrest,Springfield Rd,Springfield Rd Rutland,49.8873,-119.3869,street_segment
+castanet_594488,2026-01-08,Break & Enter,Lakeshore Rd,Lakeshore Rd Lower Mission,49.8429,-119.4912,street_segment
+castanet_594530,2026-01-09,Weapons Seizure,Postill Lake Rd,Postill Lake Rd area,49.976,-119.439,area
+castanet_594602,2026-01-10,Police Operation,Multiple locations,Kelowna city-wide,49.888,-119.496,area
+castanet_594644,2026-01-11,Armed Arrest,CIBC Orchard Park,Near Orchard Park Mall,49.8791,-119.4392,nearby
+castanet_594689,2026-01-12,Search Warrant,Bernard Ave,Residential Bernard Ave,49.8899,-119.472,street_segment
+castanet_594745,2026-01-13,Vandalism,City Park,City Park Kelowna,49.8867,-119.5022,place
+castanet_594811,2026-01-14,Assault,Pandosy St,Pandosy Village,49.8638,-119.4801,street_segment
+castanet_594902,2026-01-15,Robbery,Rutland Rd N,Rutland Rd N corridor,49.8885,-119.3912,street_segment
+castanet_595014,2026-01-16,Vehicle Break-ins,Downtown parkade,Downtown Kelowna parkade,49.887,-119.495,area
+castanet_595101,2026-01-17,Suspicious Fire,Houghton Rd,Houghton Rd area,49.8939,-119.4039,street_segment
+castanet_595211,2026-01-18,Assault,Leon Ave,Leon Ave area,49.8866,-119.4968,street_segment
+castanet_595301,2026-01-19,Break & Enter,Harvey Ave,Harvey Ave commercial strip,49.8798,-119.4399,street_segment
+castanet_595377,2026-01-20,Robbery,Rutland,Rutland neighbourhood,49.8882,-119.392,area
+castanet_595458,2026-01-21,Break & Enter,Bernard Ave,Downtown Bernard Ave,49.886,-119.494,street_segment
+castanet_595603,2026-01-22,Weapons & Drugs,Black Mountain,Mine Hill Dr area,49.8613,-119.337,area
+castanet_595644,2026-01-23,Suspicious Fire,Sexsmith Rd,Sexsmith industrial area,49.903,-119.445,area
+castanet_595802,2026-01-24,Gang Enforcement,Kelowna,City-wide operation,49.888,-119.496,area
+castanet_595886,2026-01-25,Crime Scene,Cooper & Benvoulin,Intersection Cooper & Benvoulin,49.8764,-119.3947,intersection
+castanet_595932,2026-01-26,Dumpster Fire,Ben Lee Park,Ben Lee Park,49.8923,-119.4042,place
+castanet_596014,2026-01-27,Break & Enter,Downtown,Downtown business,49.8875,-119.4955,area
+castanet_596102,2026-01-28,Commercial Break-ins,Lakeshore Rd,Lower Mission,49.8425,-119.491,street_segment
+castanet_596201,2026-01-29,Weapons Offence,Kelowna,Traffic stop Kelowna,49.888,-119.496,area
+castanet_596311,2026-01-30,Police Investigation,Dilworth Dr,Dilworth area,49.8799,-119.4598,street_segment
+castanet_596401,2026-01-31,Assault,Springfield & Benvoulin,Intersection Springfield & Benvoulin,49.8835,-119.3896,intersection

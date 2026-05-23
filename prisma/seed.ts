@@ -3,55 +3,36 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  await prisma.report.createMany({
-    data: [
-      {
-        type: "vehicle_theft",
-        status: "approved",
-        occurredAt: new Date("2025-01-15"),
-        lat: 49.888,
-        lng: -119.496,
-        address: "Downtown Kelowna",
-        description: "Car stolen overnight",
-      },
-      {
-        type: "residential_break_enter",
-        status: "approved",
-        occurredAt: new Date("2025-01-20"),
-        lat: 49.884,
-        lng: -119.475,
-        address: "Rutland",
-        description: "Back door forced open",
-      },
-      {
-        type: "commercial_break_enter",
-        status: "approved",
-        occurredAt: new Date("2025-01-22"),
-        lat: 49.892,
-        lng: -119.485,
-        address: "Harvey Ave",
-        description: "Shop break-in after hours",
-      },
-      {
-        type: "package_theft",
-        status: "approved",
-        occurredAt: new Date("2025-01-25"),
-        lat: 49.899,
-        lng: -119.502,
-        address: "Glenmore",
-        description: "Package taken from porch",
-      },
-      {
-        type: "bicycle_theft",
-        status: "approved",
-        occurredAt: new Date("2025-01-27"),
-        lat: 49.879,
-        lng: -119.497,
-        address: "Mission",
-        description: "Bike stolen from rack",
-      },
-    ],
+  const existing = await prisma.report.findFirst({
+    where: { sourceId: "RCMP-2026-3017" },
   });
+
+  if (!existing) {
+    await prisma.report.create({
+      data: {
+        sourceId: "RCMP-2026-3017",
+        type: "vandalism_mischief",
+        occurredAt: new Date("2026-01-16T12:00:00.000Z"),
+        address: "500-block Bernard Avenue, Kelowna, BC",
+        lat: 49.8869,
+        lng: -119.4956,
+        description: "**Downtown property crime offender arrested**\n\nKelowna RCMP responded to a mischief in progress at a business in the 500-block of Bernard Avenue. A male was arrested.",
+        sourceName: "Kelowna RCMP News Release",
+        sourceUrl: "https://rcmp.ca/en/bc/kelowna/news/2026/01/4349502",
+        status: "approved",
+        isVerified: true,
+        privacyLevel: "public",
+        locationApproximate: true,
+      },
+    });
+    console.log("🌱 Inserted RCMP-2026-3017 case.");
+  } else {
+    await prisma.report.update({
+      where: { id: existing.id },
+      data: { occurredAt: new Date("2026-01-16T12:00:00.000Z") }
+    });
+    console.log("🌱 RCMP-2026-3017 case already exists. Updated occurredAt.");
+  }
 }
 
 main()

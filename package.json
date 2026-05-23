@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.1.0",
+    "csv-parse": "^6.1.0",
     "leaflet": "^1.9.4",
     "leaflet-control-geocoder": "^3.3.1",
     "leaflet.markercluster": "^1.5.3",

@@ -40,32 +40,49 @@ type Report = {
   lng: number;
   address?: string | null;
   description?: string | null;
+  isVerified?: boolean;
+  sourceName?: string | null;
+  locationApproximate?: boolean;
 };
 
 const kelownaCenter: [number, number] = [49.888, -119.496];
 
-function getColor(type: string) {
+function getIconEmoji(type: string) {
   const t = (type || "").toLowerCase();
-  if (t.includes("vehicle")) return "#2d7ff9";
-  if (t.includes("bicycle")) return "#2d7ff9";
-  if (t.includes("theft")) return "#2d7ff9";
-  if (t.includes("break")) return "#f5a623";
-  if (t.includes("assault")) return "#d0021b";
-  if (t.includes("mischief")) return "#7b61ff";
-  return "#4a4a4a";
+  if (t === "camera") return "📹";
+  if (t.includes("vehicle")) return "🚗";
+  if (t.includes("break")) return "🏠";
+  if (t.includes("theft") || t.includes("shoplift")) return "🛍️";
+  if (t.includes("mischief") || t.includes("vandalism")) return "⚠️";
+  if (t.includes("assault")) return "🚨";
+  if (t.includes("fraud")) return "💳";
+  return "📍";
 }
 
-function makeDotIcon(color: string) {
+function getCleanLabel(type: string) {
+  const t = (type || "").toLowerCase();
+  if (t === "all") return "All Types";
+  if (t === "camera") return "Camera";
+  if (t.includes("vehicle")) return "Vehicle Theft";
+  if (t.includes("break")) return "Break & Enter";
+  if (t.includes("theft") || t.includes("shoplift")) return "Theft";
+  if (t.includes("mischief") || t.includes("vandalism")) return "Mischief";
+  if (t.includes("assault")) return "Assault";
+  if (t.includes("fraud")) return "Fraud";
+  return "Other";
+}
+
+function makeEmojiIcon(emoji: string) {
   return L.divIcon({
     className: "",
     html: `<div style="
-      width:14px;height:14px;border-radius:50%;
-      background:${color};
-      border:2px solid white;
-      box-shadow: 0 1px 4px rgba(0,0,0,.35);
-    "></div>`,
-    iconSize: [14, 14],
-    iconAnchor: [7, 7],
+      font-size: 20px;
+      line-height: 1;
+      text-align: center;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    ">${emoji}</div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
   });
 }
 
@@ -73,6 +90,7 @@ export default function PublicMap() {
   const [mounted, setMounted] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // filters
   const [typeFilter, setTypeFilter] = useState("all");
@@ -87,37 +105,73 @@ export default function PublicMap() {
     setMounted(true);
   }, []);
 
-  // fetch reports
-  useEffect(() => {
-    let cancelled = false;
+// fetch reports + cameras
+useEffect(() => {
+  let cancelled = false;
 
-    (async () => {
-      setLoading(true);
-      try {
-        const res = await fetch("/api/reports");
-        const data = (await res.json()) as Report[];
-        if (!cancelled) setReports(data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        if (!cancelled) setLoading(false);
+  (async () => {
+    setLoading(true);
+    try {
+      // Fetch reports
+      const res = await fetch("/api/reports");
+      const rawData = await res.json();
+      
+      let reportData: Report[] = [];
+      if (Array.isArray(rawData)) {
+        reportData = rawData;
+      } else if (rawData && Array.isArray(rawData.reports)) {
+        reportData = rawData.reports;
+      } else if (rawData && rawData.error) {
+        console.error("API error:", rawData.error);
+        if (!cancelled) setErrorMsg("Reports could not be loaded. Check database connection.");
+      } else {
+        if (!cancelled) setErrorMsg("Reports could not be loaded. Check database connection.");
       }
-    })();
 
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+      // Fetch cameras
+      const camRes = await fetch("/api/cameras");
+      const cameraData = await camRes.json();
+
+      if (!cancelled) {
+        setReports(reportData);
+
+        // Add camera markers
+        if (Array.isArray(cameraData)) {
+          cameraData.forEach((cam: any) => {
+            L.marker([cam.lat, cam.lng], {
+              icon: makeEmojiIcon("📹"),
+            })
+              .addTo(mapRef.current!)
+              .bindPopup(`<b>${cam.name}</b><br/>Type: ${cam.type}`);
+          });
+        }
+      }
+
+    } catch (e) {
+      console.error(e);
+      if (!cancelled) {
+        setErrorMsg("Reports could not be loaded. Check database connection.");
+        setReports([]);
+      }
+    } finally {
+      if (!cancelled) setLoading(false);
+    }
+  })();
+
+  return () => {
+    cancelled = true;
+  };
+}, []);
 
   const types = useMemo(() => {
-    const s = new Set(reports.map((r) => r.type).filter(Boolean));
+    const s = new Set((reports || []).map((r) => r.type).filter(Boolean));
     return ["all", ...Array.from(s).sort()];
   }, [reports]);
 
   const filtered = useMemo(() => {
     const cutoff = Date.now() - daysBack * 24 * 60 * 60 * 1000;
 
-    return reports.filter((r) => {
+    return (reports || []).filter((r) => {
       const okStatus = (r.status || "").toLowerCase() === "approved";
       const okType = typeFilter === "all" ? true : r.type === typeFilter;
       const okDate = new Date(r.occurredAt).getTime() >= cutoff;
@@ -167,15 +221,16 @@ export default function PublicMap() {
 
     for (const r of filtered) {
       const marker = L.marker([r.lat, r.lng], {
-        icon: makeDotIcon(getColor(r.type)),
+        icon: makeEmojiIcon(getIconEmoji(r.type)),
       });
 
       marker.bindPopup(`
-        <div style="font-weight:700">${r.type}</div>
+        <div style="font-weight:700">${getCleanLabel(r.type)} <span title="Verified" style="color:#22c55e">✓</span></div>
         <div style="margin-top:6px">
-          <div><b>Date:</b> ${new Date(r.occurredAt).toLocaleDateString()}</div>
-          <div><b>Area:</b> ${r.address ?? "Unknown"}</div>
-          <div style="margin-top:6px">${r.description ?? ""}</div>
+          <div><b>Date:</b> ${new Intl.DateTimeFormat('en-US', { timeZone: 'America/Vancouver', month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(r.occurredAt))}</div>
+          <div><b>Area:</b> ${r.address ?? "Unknown"} ${r.locationApproximate ? '<span style="color:#64748b; font-size:0.85em;">(Approximate)</span>' : ''}</div>
+          ${r.sourceName ? `<div style="margin-top:4px"><b>Source:</b> ${r.sourceName}</div>` : ''}
+          <div style="margin-top:6px; font-size:0.95em;">${r.description ?? ""}</div>
         </div>
       `);
 
@@ -186,18 +241,21 @@ export default function PublicMap() {
   // ✅ Now it is SAFE to early-return AFTER hooks
   if (!mounted) {
     return (
-      <div style={{ height: "100vh", display: "grid", placeItems: "center" }}>
+      <div style={{ height: "100%", display: "grid", placeItems: "center" }}>
         Loading map...
       </div>
     );
   }
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", height: "100vh" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", height: "100%" }}>
       {/* Sidebar */}
-      <aside style={{ borderRight: "1px solid #e5e5e5", padding: 16, overflow: "auto" }}>
-        <h2 style={{ margin: 0 }}>Search for Occurrences</h2>
-        <p style={{ marginTop: 8, color: "#555" }}>Approved reports across Kelowna.</p>
+      <aside style={{ borderRight: "1px solid #e5e5e5", padding: 16, overflow: "auto", display: "flex", flexDirection: "column" }}>
+        <div>
+          <h2 style={{ margin: 0 }}>Kelowna GeoDASH</h2>
+          <div style={{ fontWeight: 600, color: "#1e293b", marginTop: 4 }}>Independent Public Safety Map</div>
+          <p style={{ marginTop: 8, color: "#555", fontSize: "0.95em" }}>Verified public safety reports across Kelowna.</p>
+        </div>
 
         <div style={{ marginTop: 16 }}>
           <label style={{ fontWeight: 600 }}>Type</label>
@@ -208,7 +266,7 @@ export default function PublicMap() {
           >
             {types.map((t) => (
               <option key={t} value={t}>
-                {t}
+                {getCleanLabel(t)}
               </option>
             ))}
           </select>
@@ -232,25 +290,34 @@ export default function PublicMap() {
         <div style={{ marginTop: 16, padding: 12, background: "#f7f7f7", borderRadius: 8 }}>
           <div style={{ fontWeight: 700 }}>Results</div>
           <div style={{ marginTop: 6 }}>{loading ? "Loading…" : `${filtered.length} reports`}</div>
+          {errorMsg && (
+            <div style={{ marginTop: 8, color: "#d0021b", fontSize: "0.9em" }}>
+              {errorMsg}
+            </div>
+          )}
         </div>
 
-        <div style={{ marginTop: 16 }}>
+        <div style={{ marginTop: 16, flex: 1 }}>
           <div style={{ fontWeight: 700 }}>Legend</div>
-          {["vehicle_theft", "bicycle_theft", "break_enter", "assault", "mischief"].map((t) => (
-            <div key={t} style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
-              <div
-                style={{
-                  width: 14,
-                  height: 14,
-                  borderRadius: "50%",
-                  background: getColor(t),
-                  border: "2px solid white",
-                  boxShadow: "0 1px 4px rgba(0,0,0,.35)",
-                }}
-              />
-              <span style={{ color: "#333" }}>{t}</span>
+          {[
+            { label: "Vehicle Theft", type: "vehicle_theft" },
+            { label: "Break & Enter", type: "break_enter" },
+            { label: "Theft", type: "theft" },
+            { label: "Mischief", type: "mischief" },
+            { label: "Assault", type: "assault" },
+            { label: "Fraud", type: "fraud" },
+            { label: "Other", type: "other" },
+            { label: "Camera", type: "camera" }
+          ].map((item) => (
+            <div key={item.type} style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
+              <span style={{ fontSize: "20px" }}>{getIconEmoji(item.type)}</span>
+              <span style={{ color: "#333", fontSize: "0.95em" }}>{item.label}</span>
             </div>
           ))}
+        </div>
+
+        <div style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid #e2e8f0", fontSize: "0.8em", color: "#64748b", lineHeight: 1.5 }}>
+          <b>Disclaimer:</b> Kelowna GeoDASH is an independent public-safety dashboard and is not an official RCMP, City of Kelowna, or police website. Incident locations may be approximate.
         </div>
       </aside>
 
