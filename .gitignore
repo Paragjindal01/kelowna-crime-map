@@ -2,4 +2,6 @@ node_modules
 .next
 .env
 .DS_Store
-
+tsconfig.tsbuildinfo
+/public/uploads/*
+!/public/uploads/.gitkeep

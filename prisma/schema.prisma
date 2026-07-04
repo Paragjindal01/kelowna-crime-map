@@ -28,6 +28,145 @@ enum ReportStatus {
   rejected
 }
 
+enum LostItemStatus {
+  lost
+  found
+  returned
+}
+
+enum Moderation {
+  pending
+  approved
+  rejected
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String
+  name          String
+  avatarColor   String   @default("#b3823f")
+  xp            Int      @default(0)
+  banned        Boolean  @default(false)
+  emailVerified Boolean  @default(false)
+  verifyToken   String?  @unique
+  createdAt     DateTime @default(now())
+
+  sessions      Session[]
+  reports       Report[]
+  lostItems     LostItem[]
+  comments      Comment[]
+  notifications Notification[]
+  xpEvents      XpEvent[]
+  sentMessages  Message[]      @relation("sender")
+  threadsAsOwner MessageThread[] @relation("owner")
+  threadsAsOther MessageThread[] @relation("other")
+}
+
+model Session {
+  token     String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model XpEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Int
+  reason    String
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  body      String
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model MessageThread {
+  id         String    @id @default(cuid())
+  lostItemId String
+  lostItem   LostItem  @relation(fields: [lostItemId], references: [id], onDelete: Cascade)
+  ownerId    String
+  owner      User      @relation("owner", fields: [ownerId], references: [id], onDelete: Cascade)
+  otherId    String
+  other      User      @relation("other", fields: [otherId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+  messages   Message[]
+
+  @@unique([lostItemId, otherId])
+}
+
+model Message {
+  id        String        @id @default(cuid())
+  threadId  String
+  thread    MessageThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User          @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime      @default(now())
+
+  @@index([threadId, createdAt])
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  targetType String // "report" | "lost_item"
+  targetId   String
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  body       String
+  hidden     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([targetType, targetId, createdAt])
+}
+
+model FeatureVote {
+  id         String   @id @default(cuid())
+  featureKey String
+  userId     String
+  createdAt  DateTime @default(now())
+
+  @@unique([featureKey, userId])
+  @@index([featureKey])
+}
+
+model LostItem {
+  id          String         @id @default(cuid())
+  title       String
+  category    String
+  description String?
+  location    String
+  dateLost    DateTime
+  contact     String
+  imageUrl    String?
+  status      LostItemStatus @default(lost)
+  moderation  Moderation     @default(pending)
+  finderNote  String?
+  ownerId     String?
+  owner       User?          @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  threads     MessageThread[]
+
+  @@index([status, createdAt])
+  @@index([moderation, createdAt])
+}
+
 model Report {
   id          String       @id @default(cuid())
   type        CrimeType
@@ -43,6 +182,8 @@ model Report {
   sourceUrl           String?
   locationApproximate Boolean      @default(false)
   privacyLevel        String?
+  userId              String?
+  user                User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 

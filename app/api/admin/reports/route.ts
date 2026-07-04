@@ -5,7 +5,7 @@ export async function GET(request: Request) {
   try {
     const adminKey = request.headers.get("x-admin-key");
 
-    if (process.env.ADMIN_KEY && adminKey !== process.env.ADMIN_KEY) {
+    if (!process.env.ADMIN_KEY || adminKey !== process.env.ADMIN_KEY) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

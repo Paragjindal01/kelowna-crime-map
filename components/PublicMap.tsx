@@ -45,6 +45,13 @@ type Report = {
   locationApproximate?: boolean;
 };
 
+type Camera = {
+  name: string;
+  type: string;
+  lat: number;
+  lng: number;
+};
+
 const kelownaCenter: [number, number] = [49.888, -119.496];
 
 function getIconEmoji(type: string) {
@@ -57,6 +64,18 @@ function getIconEmoji(type: string) {
   if (t.includes("assault")) return "🚨";
   if (t.includes("fraud")) return "💳";
   return "📍";
+}
+
+function getMarkerColor(type: string) {
+  const t = (type || "").toLowerCase();
+  if (t === "camera") return "#8a5c8f";
+  if (t.includes("vehicle")) return "#c96f4a";
+  if (t.includes("break")) return "#d9a45b";
+  if (t.includes("theft") || t.includes("shoplift")) return "#a04a68";
+  if (t.includes("mischief") || t.includes("vandalism")) return "#e3c975";
+  if (t.includes("assault")) return "#c94f4f";
+  if (t.includes("fraud")) return "#7fa35c";
+  return "#c98ba6";
 }
 
 function getCleanLabel(type: string) {
@@ -72,23 +91,99 @@ function getCleanLabel(type: string) {
   return "Other";
 }
 
-function makeEmojiIcon(emoji: string) {
+function makeNeonIcon(type: string) {
+  const color = getMarkerColor(type);
+  const emoji = getIconEmoji(type);
   return L.divIcon({
     className: "",
-    html: `<div style="
-      font-size: 20px;
-      line-height: 1;
-      text-align: center;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
-    ">${emoji}</div>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
+    html: `<div class="neon-marker" style="--marker-color:${color}">
+      <span class="neon-marker__ring"></span>
+      <span class="neon-marker__core">${emoji}</span>
+    </div>`,
+    iconSize: [34, 34],
+    iconAnchor: [17, 17],
+    popupAnchor: [0, -14],
   });
+}
+
+function makeClusterIcon(cluster: any) {
+  return L.divIcon({
+    className: "",
+    html: `<div class="neon-cluster">${cluster.getChildCount()}</div>`,
+    iconSize: L.point(38, 38),
+  });
+}
+
+// User-submitted text goes into Leaflet popup HTML — escape it to prevent
+// stored XSS via report addresses/descriptions.
+function esc(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function popupHtml(r: Report) {
+  const color = getMarkerColor(r.type);
+  const date = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Vancouver",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(r.occurredAt));
+
+  return `
+    <div style="font-family:var(--font-body); min-width:200px">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-family:var(--font-display); font-size:0.8rem; letter-spacing:0.08em; text-transform:uppercase; color:${color}; text-shadow:0 0 10px ${color}">
+          ${getCleanLabel(r.type)}
+        </span>
+        <span title="Verified" style="color:#7fa35c; text-shadow:0 0 8px #7fa35c">✓</span>
+      </div>
+      <div style="margin-top:8px; font-size:0.95em; line-height:1.55; color:#f6ede1">
+        <div><span style="color:#c0ab97">DATE //</span> ${date}</div>
+        <div><span style="color:#c0ab97">AREA //</span> ${esc(r.address ?? "Unknown")} ${r.locationApproximate ? '<span style="color:#8d7460; font-size:0.85em;">(approx.)</span>' : ""}</div>
+        ${r.sourceName ? `<div><span style="color:#c0ab97">SOURCE //</span> ${esc(r.sourceName)}</div>` : ""}
+        ${r.description ? `<div style="margin-top:6px; padding-top:6px; border-top:1px solid rgba(217,164,91,0.18); color:#e3d3bf;">${esc(r.description)}</div>` : ""}
+      </div>
+    </div>
+  `;
+}
+
+function LiveClock() {
+  const [now, setNow] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setNow(new Date());
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <span
+      style={{
+        fontFamily: "var(--font-mono)",
+        fontSize: "0.78rem",
+        color: "var(--accent)",
+        textShadow: "0 0 8px rgba(217,164,91,0.6)",
+      }}
+    >
+      {now
+        ? now.toLocaleTimeString("en-US", {
+            hour12: false,
+            timeZone: "America/Vancouver",
+          })
+        : "--:--:--"}
+    </span>
+  );
 }
 
 export default function PublicMap() {
   const [mounted, setMounted] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
+  const [cameras, setCameras] = useState<Camera[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -98,70 +193,61 @@ export default function PublicMap() {
 
   const mapRef = useRef<L.Map | null>(null);
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
+  const cameraLayerRef = useRef<L.LayerGroup | null>(null);
   const geocoderAddedRef = useRef(false);
+  const [mapReady, setMapReady] = useState(false);
 
   // ✅ mount gate (prevents hydration + map init issues)
   useEffect(() => {
     setMounted(true);
   }, []);
 
-// fetch reports + cameras
-useEffect(() => {
-  let cancelled = false;
+  // fetch reports + cameras
+  useEffect(() => {
+    let cancelled = false;
 
-  (async () => {
-    setLoading(true);
-    try {
-      // Fetch reports
-      const res = await fetch("/api/reports");
-      const rawData = await res.json();
-      
-      let reportData: Report[] = [];
-      if (Array.isArray(rawData)) {
-        reportData = rawData;
-      } else if (rawData && Array.isArray(rawData.reports)) {
-        reportData = rawData.reports;
-      } else if (rawData && rawData.error) {
-        console.error("API error:", rawData.error);
-        if (!cancelled) setErrorMsg("Reports could not be loaded. Check database connection.");
-      } else {
-        if (!cancelled) setErrorMsg("Reports could not be loaded. Check database connection.");
-      }
+    (async () => {
+      setLoading(true);
+      try {
+        // Fetch reports
+        const res = await fetch("/api/reports");
+        const rawData = await res.json();
 
-      // Fetch cameras
-      const camRes = await fetch("/api/cameras");
-      const cameraData = await camRes.json();
-
-      if (!cancelled) {
-        setReports(reportData);
-
-        // Add camera markers
-        if (Array.isArray(cameraData)) {
-          cameraData.forEach((cam: any) => {
-            L.marker([cam.lat, cam.lng], {
-              icon: makeEmojiIcon("📹"),
-            })
-              .addTo(mapRef.current!)
-              .bindPopup(`<b>${cam.name}</b><br/>Type: ${cam.type}`);
-          });
+        let reportData: Report[] = [];
+        if (Array.isArray(rawData)) {
+          reportData = rawData;
+        } else if (rawData && Array.isArray(rawData.reports)) {
+          reportData = rawData.reports;
+        } else if (rawData && rawData.error) {
+          console.error("API error:", rawData.error);
+          if (!cancelled) setErrorMsg("Reports could not be loaded. Check database connection.");
+        } else {
+          if (!cancelled) setErrorMsg("Reports could not be loaded. Check database connection.");
         }
-      }
 
-    } catch (e) {
-      console.error(e);
-      if (!cancelled) {
-        setErrorMsg("Reports could not be loaded. Check database connection.");
-        setReports([]);
-      }
-    } finally {
-      if (!cancelled) setLoading(false);
-    }
-  })();
+        // Fetch cameras
+        const camRes = await fetch("/api/cameras");
+        const cameraData = await camRes.json();
 
-  return () => {
-    cancelled = true;
-  };
-}, []);
+        if (!cancelled) {
+          setReports(reportData);
+          if (Array.isArray(cameraData)) setCameras(cameraData);
+        }
+      } catch (e) {
+        console.error(e);
+        if (!cancelled) {
+          setErrorMsg("Reports could not be loaded. Check database connection.");
+          setReports([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const types = useMemo(() => {
     const s = new Set((reports || []).map((r) => r.type).filter(Boolean));
@@ -202,11 +288,21 @@ useEffect(() => {
       const clusterGroup = L.markerClusterGroup({
         chunkedLoading: true,
         showCoverageOnHover: false,
+        iconCreateFunction: makeClusterIcon,
       });
 
       clusterRef.current = clusterGroup;
       map.addLayer(clusterGroup);
     }
+
+    // ✅ Camera layer only once
+    if (!cameraLayerRef.current) {
+      const cameraLayer = L.layerGroup();
+      cameraLayerRef.current = cameraLayer;
+      map.addLayer(cameraLayer);
+    }
+
+    setMapReady(true);
   }
 
   // ✅ rebuild markers whenever filtered changes
@@ -221,48 +317,125 @@ useEffect(() => {
 
     for (const r of filtered) {
       const marker = L.marker([r.lat, r.lng], {
-        icon: makeEmojiIcon(getIconEmoji(r.type)),
+        icon: makeNeonIcon(r.type),
       });
 
-      marker.bindPopup(`
-        <div style="font-weight:700">${getCleanLabel(r.type)} <span title="Verified" style="color:#22c55e">✓</span></div>
-        <div style="margin-top:6px">
-          <div><b>Date:</b> ${new Intl.DateTimeFormat('en-US', { timeZone: 'America/Vancouver', month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(r.occurredAt))}</div>
-          <div><b>Area:</b> ${r.address ?? "Unknown"} ${r.locationApproximate ? '<span style="color:#64748b; font-size:0.85em;">(Approximate)</span>' : ''}</div>
-          ${r.sourceName ? `<div style="margin-top:4px"><b>Source:</b> ${r.sourceName}</div>` : ''}
-          <div style="margin-top:6px; font-size:0.95em;">${r.description ?? ""}</div>
-        </div>
-      `);
-
+      marker.bindPopup(popupHtml(r));
       cluster.addLayer(marker);
     }
-  }, [filtered, mounted]);
+  }, [filtered, mounted, mapReady]);
+
+  // ✅ camera markers once cameras + map are both ready
+  useEffect(() => {
+    if (!mounted) return;
+
+    const layer = cameraLayerRef.current;
+    if (!layer) return;
+
+    layer.clearLayers();
+
+    for (const cam of cameras) {
+      L.marker([cam.lat, cam.lng], { icon: makeNeonIcon("camera") })
+        .addTo(layer)
+        .bindPopup(`
+          <div style="font-family:var(--font-body)">
+            <span style="font-family:var(--font-display); font-size:0.8rem; letter-spacing:0.08em; text-transform:uppercase; color:#a04a68; text-shadow:0 0 10px #a04a68">${esc(cam.name)}</span>
+            <div style="margin-top:6px; color:#f6ede1"><span style="color:#c0ab97">TYPE //</span> ${esc(cam.type)}</div>
+          </div>
+        `);
+    }
+  }, [cameras, mounted, mapReady]);
 
   // ✅ Now it is SAFE to early-return AFTER hooks
   if (!mounted) {
     return (
-      <div style={{ height: "100%", display: "grid", placeItems: "center" }}>
-        Loading map...
+      <div
+        style={{
+          height: "100%",
+          display: "grid",
+          placeItems: "center",
+          fontFamily: "var(--font-mono)",
+          color: "var(--accent)",
+          letterSpacing: "0.3em",
+          textShadow: "0 0 12px rgba(217,164,91,0.6)",
+        }}
+      >
+        INITIALIZING GRID...
       </div>
     );
   }
 
+  const legendItems = [
+    { label: "Vehicle Theft", type: "vehicle_theft" },
+    { label: "Break & Enter", type: "break_enter" },
+    { label: "Theft", type: "theft" },
+    { label: "Mischief", type: "mischief" },
+    { label: "Assault", type: "assault" },
+    { label: "Fraud", type: "fraud" },
+    { label: "Other", type: "other" },
+    { label: "Camera", type: "camera" },
+  ];
+
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", height: "100%" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "330px 1fr", height: "100%" }}>
       {/* Sidebar */}
-      <aside style={{ borderRight: "1px solid #e5e5e5", padding: 16, overflow: "auto", display: "flex", flexDirection: "column" }}>
+      <aside
+        className="glass-panel"
+        style={{
+          borderRadius: 0,
+          borderTop: "none",
+          borderBottom: "none",
+          borderLeft: "none",
+          padding: 18,
+          overflow: "auto",
+          display: "flex",
+          flexDirection: "column",
+          gap: 16,
+        }}
+      >
         <div>
-          <h2 style={{ margin: 0 }}>Kelowna GeoDASH</h2>
-          <div style={{ fontWeight: 600, color: "#1e293b", marginTop: 4 }}>Independent Public Safety Map</div>
-          <p style={{ marginTop: 8, color: "#555", fontSize: "0.95em" }}>Verified public safety reports across Kelowna.</p>
+          <h2 className="cyber-title" style={{ margin: 0, fontSize: "1.3rem" }}>
+            Kelowna GeoDASH
+          </h2>
+          <div className="cyber-sub" style={{ marginTop: 6 }}>
+            Public Safety Grid
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginTop: 12,
+              padding: "8px 12px",
+              borderRadius: 8,
+              border: "1px solid rgba(217, 164, 91, 0.18)",
+              background: "rgba(217, 164, 91, 0.05)",
+            }}
+          >
+            <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="live-dot" />
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "0.65rem",
+                  letterSpacing: "0.2em",
+                  color: "var(--vine)",
+                }}
+              >
+                LIVE FEED
+              </span>
+            </span>
+            <LiveClock />
+          </div>
         </div>
 
-        <div style={{ marginTop: 16 }}>
-          <label style={{ fontWeight: 600 }}>Type</label>
+        <div>
+          <label className="cyber-label">Incident Type</label>
           <select
+            className="cyber-select"
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            style={{ width: "100%", padding: 10, marginTop: 6 }}
+            style={{ marginTop: 6 }}
           >
             {types.map((t) => (
               <option key={t} value={t}>
@@ -272,12 +445,13 @@ useEffect(() => {
           </select>
         </div>
 
-        <div style={{ marginTop: 16 }}>
-          <label style={{ fontWeight: 600 }}>Time Range</label>
+        <div>
+          <label className="cyber-label">Time Range</label>
           <select
+            className="cyber-select"
             value={daysBack}
             onChange={(e) => setDaysBack(Number(e.target.value))}
-            style={{ width: "100%", padding: 10, marginTop: 6 }}
+            style={{ marginTop: 6 }}
           >
             <option value={7}>Last 7 days</option>
             <option value={30}>Last 30 days</option>
@@ -287,58 +461,139 @@ useEffect(() => {
           </select>
         </div>
 
-        <div style={{ marginTop: 16, padding: 12, background: "#f7f7f7", borderRadius: 8 }}>
-          <div style={{ fontWeight: 700 }}>Results</div>
-          <div style={{ marginTop: 6 }}>{loading ? "Loading…" : `${filtered.length} reports`}</div>
-          {errorMsg && (
-            <div style={{ marginTop: 8, color: "#d0021b", fontSize: "0.9em" }}>
-              {errorMsg}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div className="hud-card" style={{ textAlign: "center" }}>
+            <div className="cyber-label">Reports</div>
+            <div
+              style={{
+                marginTop: 4,
+                fontFamily: "var(--font-display)",
+                fontSize: "1.5rem",
+                fontWeight: 700,
+                color: "var(--accent)",
+                textShadow: "0 0 14px rgba(217,164,91,0.6)",
+              }}
+            >
+              {loading ? "··" : filtered.length}
             </div>
-          )}
+          </div>
+          <div className="hud-card" style={{ textAlign: "center" }}>
+            <div className="cyber-label">Cameras</div>
+            <div
+              style={{
+                marginTop: 4,
+                fontFamily: "var(--font-display)",
+                fontSize: "1.5rem",
+                fontWeight: 700,
+                color: "var(--wine)",
+                textShadow: "0 0 14px rgba(160,74,104,0.7)",
+              }}
+            >
+              {loading ? "··" : cameras.length}
+            </div>
+          </div>
         </div>
 
-        <div style={{ marginTop: 16, flex: 1 }}>
-          <div style={{ fontWeight: 700 }}>Legend</div>
-          {[
-            { label: "Vehicle Theft", type: "vehicle_theft" },
-            { label: "Break & Enter", type: "break_enter" },
-            { label: "Theft", type: "theft" },
-            { label: "Mischief", type: "mischief" },
-            { label: "Assault", type: "assault" },
-            { label: "Fraud", type: "fraud" },
-            { label: "Other", type: "other" },
-            { label: "Camera", type: "camera" }
-          ].map((item) => (
-            <div key={item.type} style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
-              <span style={{ fontSize: "20px" }}>{getIconEmoji(item.type)}</span>
-              <span style={{ color: "#333", fontSize: "0.95em" }}>{item.label}</span>
-            </div>
-          ))}
+        {errorMsg && (
+          <div
+            style={{
+              padding: "10px 12px",
+              borderRadius: 8,
+              border: "1px solid rgba(255, 45, 85, 0.45)",
+              background: "rgba(255, 45, 85, 0.1)",
+              color: "#c94f4f",
+              fontSize: "0.9em",
+              textShadow: "0 0 8px rgba(201,79,79,0.5)",
+            }}
+          >
+            ⚠ {errorMsg}
+          </div>
+        )}
+
+        <div style={{ flex: 1 }}>
+          <div className="cyber-label" style={{ marginBottom: 8 }}>
+            Legend
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {legendItems.map((item) => {
+              const color = getMarkerColor(item.type);
+              return (
+                <span
+                  key={item.type}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 7,
+                    padding: "5px 11px",
+                    borderRadius: 999,
+                    border: `1px solid ${color}55`,
+                    background: `${color}12`,
+                    fontSize: "0.85em",
+                    fontWeight: 600,
+                    color: "var(--text-hi)",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      background: color,
+                      boxShadow: `0 0 8px ${color}`,
+                    }}
+                  />
+                  {item.label}
+                </span>
+              );
+            })}
+          </div>
         </div>
 
-        <div style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid #e2e8f0", fontSize: "0.8em", color: "#64748b", lineHeight: 1.5 }}>
-          <b>Disclaimer:</b> Kelowna GeoDASH is an independent public-safety dashboard and is not an official RCMP, City of Kelowna, or police website. Incident locations may be approximate.
+        <div
+          style={{
+            paddingTop: 14,
+            borderTop: "1px solid rgba(217, 164, 91, 0.15)",
+            fontSize: "0.8em",
+            color: "var(--text-dim)",
+            lineHeight: 1.55,
+          }}
+        >
+          <b style={{ color: "var(--text-mid)" }}>Disclaimer:</b> Kelowna GeoDASH is an independent
+          public-safety dashboard and is not an official RCMP, City of Kelowna, or police website.
+          Incident locations may be approximate.
         </div>
       </aside>
 
       {/* Map */}
       <div style={{ position: "relative" }}>
         <MapContainer
-  center={kelownaCenter}
-  zoom={12}
-  style={{ height: "100%", width: "100%" }}
-  zoomControl={false}
->
-  <ZoomControl position="topleft" />
+          center={kelownaCenter}
+          zoom={12}
+          style={{ height: "100%", width: "100%" }}
+          zoomControl={false}
+        >
+          <ZoomControl position="topleft" />
 
-  <TileLayer
-    attribution="&copy; OpenStreetMap contributors"
-    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-  />
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            subdomains="abcd"
+            maxZoom={20}
+          />
 
-  <MapSetup onReady={onMapReady} />
-</MapContainer>
+          <MapSetup onReady={onMapReady} />
+        </MapContainer>
 
+        {/* vignette overlay for depth */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 500,
+            pointerEvents: "none",
+            boxShadow: "inset 0 0 120px rgba(0, 0, 0, 0.65), inset 0 0 40px rgba(217, 164, 91, 0.06)",
+          }}
+        />
       </div>
     </div>
   );

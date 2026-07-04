@@ -1,9 +1,9 @@
-import PublicMapClient from "../components/PublicMapClient";
+import Landing from "./components/Landing";
 
 export default function HomePage() {
   return (
-    <main style={{ height: "100%", width: "100%" }}>
-      <PublicMapClient />
+    <main style={{ height: "100%", overflowY: "auto", overflowX: "hidden" }}>
+      <Landing />
     </main>
   );
 }
