@@ -558,9 +558,14 @@ export default function PublicMap() {
             lineHeight: 1.55,
           }}
         >
+          <b style={{ color: "var(--text-mid)" }}>About the data:</b> Pins come from
+          community-submitted reports and public news reports (with a source link on each). Locations
+          are approximate — often a block or intersection, not an exact address.
+          <br />
+          <br />
           <b style={{ color: "var(--text-mid)" }}>Disclaimer:</b> Kelowna GeoDASH is an independent
-          public-safety dashboard and is not an official RCMP, City of Kelowna, or police website.
-          Incident locations may be approximate.
+          public-safety dashboard, not an official RCMP, City of Kelowna, or police website. For
+          emergencies call 911.
         </div>
       </aside>
 
