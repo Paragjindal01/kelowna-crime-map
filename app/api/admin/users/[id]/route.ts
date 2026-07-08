@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { isAdmin, logAudit } from "@/lib/admin";
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const adminKey = request.headers.get("x-admin-key");
-    if (!process.env.ADMIN_KEY || adminKey !== process.env.ADMIN_KEY) {
+    if (!isAdmin(request)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -27,6 +27,8 @@ export async function PATCH(
     if (banned) {
       await prisma.session.deleteMany({ where: { userId: id } });
     }
+
+    await logAudit(request, banned ? "user_banned" : "user_unbanned", "user", id);
 
     return NextResponse.json({ id: user.id, banned: user.banned });
   } catch (error) {

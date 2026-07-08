@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { isAdmin } from "@/lib/admin";
 
 export async function GET(request: Request) {
   try {
-    const adminKey = request.headers.get("x-admin-key");
-    if (!process.env.ADMIN_KEY || adminKey !== process.env.ADMIN_KEY) {
+    if (!isAdmin(request)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -17,6 +17,7 @@ export async function GET(request: Request) {
         email: true,
         xp: true,
         banned: true,
+        emailVerified: true,
         createdAt: true,
         _count: { select: { reports: true, lostItems: true } },
       },

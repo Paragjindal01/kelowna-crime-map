@@ -155,21 +155,6 @@ export default function Navbar() {
             </span>
           </Link>
         )}
-
-        <Link
-          href="/admin"
-          style={{
-            marginLeft: 4,
-            padding: "7px 10px",
-            textDecoration: "none",
-            fontSize: "0.72rem",
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            color: "var(--text-dim)",
-          }}
-        >
-          Admin
-        </Link>
       </div>
     </nav>
   );
