@@ -1,14 +1,14 @@
 import StaticPage from "../components/StaticPage";
 
-export const metadata = { title: "Privacy Policy — Kelowna GeoDASH" };
+export const metadata = { title: "Privacy Policy — SafeKelowna" };
 
 export default function PrivacyPage() {
   return (
-    <StaticPage title="Privacy Policy" subtitle="How GeoDASH collects, uses, and protects information" updated="July 6, 2026">
+    <StaticPage title="Privacy Policy" subtitle="How SafeKelowna collects, uses, and protects information" updated="July 6, 2026">
       <p>
-        This Privacy Policy describes how Kelowna GeoDASH (&ldquo;GeoDASH&rdquo;, &ldquo;we&rdquo;,
+        This Privacy Policy describes how SafeKelowna (&ldquo;SafeKelowna&rdquo;, &ldquo;we&rdquo;,
         &ldquo;us&rdquo;) collects, uses, discloses, and safeguards information when you use our
-        website and services. GeoDASH is an independent community platform operated in British
+        website and services. SafeKelowna is an independent community platform operated in British
         Columbia, Canada. By using the platform, you consent to the practices described below.
       </p>
 
@@ -37,7 +37,7 @@ export default function PrivacyPage() {
 
       <h2>2. Cookies</h2>
       <p>
-        GeoDASH sets a single first-party, httpOnly session cookie used solely to keep you signed
+        SafeKelowna sets a single first-party, httpOnly session cookie used solely to keep you signed
         in. We do not use advertising cookies, cross-site tracking cookies, or third-party
         analytics trackers. Deleting the cookie signs you out; nothing else is stored on your
         device.
@@ -138,7 +138,7 @@ export default function PrivacyPage() {
 
       <h2>11. Children</h2>
       <p>
-        GeoDASH is not directed at children under 13, and we do not knowingly collect their
+        SafeKelowna is not directed at children under 13, and we do not knowingly collect their
         personal information. If you believe a child has created an account, contact us and we
         will remove it.
       </p>

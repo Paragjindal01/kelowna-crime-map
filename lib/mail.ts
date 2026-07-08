@@ -22,19 +22,19 @@ export async function sendVerificationEmail(to: string, name: string, token: str
   });
 
   await transporter.sendMail({
-    from: process.env.SMTP_FROM || "Kelowna GeoDASH <no-reply@geodash.local>",
+    from: process.env.SMTP_FROM || "SafeKelowna <no-reply@safekelowna.local>",
     to,
-    subject: "Verify your Kelowna GeoDASH account",
-    text: `Hi ${name},\n\nWelcome to Kelowna GeoDASH! Confirm your email address by opening this link:\n\n${verifyUrl}\n\nIf you didn't create this account, you can ignore this email.`,
+    subject: "Verify your SafeKelowna account",
+    text: `Hi ${name},\n\nWelcome to SafeKelowna! Confirm your email address by opening this link:\n\n${verifyUrl}\n\nIf you didn't create this account, you can ignore this email.`,
     html: `
-      <div style="font-family: Georgia, serif; max-width: 520px; margin: 0 auto; padding: 24px; background:#191014; color:#f6ede1; border-radius: 12px;">
-        <h2 style="color:#d9a45b; margin-top:0;">Kelowna GeoDASH</h2>
+      <div style="font-family: Georgia, serif; max-width: 520px; margin: 0 auto; padding: 24px; background:#ffffff; color:#1f2933; border:1px solid #d8d5cc; border-radius: 8px;">
+        <h2 style="color:#2f5d50; margin-top:0;">SafeKelowna</h2>
         <p>Hi ${name},</p>
         <p>Welcome to the community! Confirm your email address to unlock posting lost items and contacting owners.</p>
         <p style="margin: 28px 0;">
-          <a href="${verifyUrl}" style="background:#d9a45b; color:#2b1a0c; padding: 12px 24px; border-radius: 10px; text-decoration:none; font-weight:bold;">Verify my email</a>
+          <a href="${verifyUrl}" style="background:#2f5d50; color:#ffffff; padding: 12px 24px; border-radius: 6px; text-decoration:none; font-weight:bold;">Verify my email</a>
         </p>
-        <p style="color:#8d7460; font-size: 0.85em;">If you didn't create this account, you can ignore this email.</p>
+        <p style="color:#667085; font-size: 0.85em;">If you didn't create this account, you can ignore this email.</p>
       </div>
     `,
   });

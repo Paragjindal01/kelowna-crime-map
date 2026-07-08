@@ -51,18 +51,33 @@ export default function Navbar() {
         alignItems: "center",
         gap: 12,
         padding: "12px 22px",
-        background: "rgba(30, 19, 22, 0.85)",
-        backdropFilter: "blur(14px)",
-        WebkitBackdropFilter: "blur(14px)",
-        borderBottom: "1px solid rgba(217, 164, 91, 0.25)",
-        boxShadow: "0 6px 30px rgba(0, 0, 0, 0.5)",
+        background: "#ffffff",
+        borderBottom: "1px solid var(--glass-border)",
         flexWrap: "wrap",
       }}
     >
-      <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{ fontSize: "1.3rem" }}>🍇</span>
-        <span className="cyber-title" style={{ fontSize: "1.25rem" }}>
-          Kelowna GeoDASH
+      <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 11 }}>
+        <span
+          aria-hidden
+          style={{
+            display: "inline-grid",
+            placeItems: "center",
+            width: 34,
+            height: 34,
+            borderRadius: 8,
+            background: "var(--primary)",
+            color: "#fff",
+            fontSize: "1.1rem",
+            fontWeight: 700,
+          }}
+        >
+          ◈
+        </span>
+        <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.1 }}>
+          <span className="cyber-title" style={{ fontSize: "1.2rem" }}>SafeKelowna</span>
+          <span style={{ fontSize: "0.66rem", color: "var(--text-mid)", letterSpacing: "0.02em" }}>
+            Community Safety &amp; Local Alerts
+          </span>
         </span>
       </Link>
 
@@ -75,21 +90,19 @@ export default function Navbar() {
               href={link.href}
               style={{
                 padding: "7px 14px",
-                borderRadius: 999,
+                borderRadius: 6,
                 textDecoration: "none",
-                fontSize: "0.78rem",
+                fontSize: "0.82rem",
                 fontWeight: 600,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: active ? "#2b1a0c" : "var(--text-mid)",
-                background: active
-                  ? "linear-gradient(92deg, var(--accent), #e8c37a)"
-                  : "transparent",
+                letterSpacing: "0.01em",
+                textTransform: "none",
+                color: active ? "#ffffff" : "var(--text-mid)",
+                background: active ? "var(--primary)" : "transparent",
                 border: active
-                  ? "1px solid var(--accent)"
+                  ? "1px solid var(--primary)"
                   : "1px solid transparent",
-                boxShadow: active ? "0 0 16px rgba(217, 164, 91, 0.35)" : "none",
-                transition: "all 0.2s ease",
+                boxShadow: "none",
+                transition: "all 0.15s ease",
               }}
             >
               {link.label}
@@ -111,8 +124,8 @@ export default function Navbar() {
                 padding: "4px 12px 4px 4px",
                 borderRadius: 999,
                 textDecoration: "none",
-                border: "1px solid rgba(217, 164, 91, 0.35)",
-                background: "rgba(217, 164, 91, 0.07)",
+                border: "1px solid var(--glass-border)",
+                background: "var(--bg-subtle)",
               }}
             >
               <span className="avatar" style={{ width: 30, height: 30, fontSize: "0.8rem", background: me.avatarColor }}>

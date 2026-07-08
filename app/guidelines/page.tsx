@@ -1,22 +1,22 @@
 import StaticPage from "../components/StaticPage";
 
-export const metadata = { title: "Community Guidelines — Kelowna GeoDASH" };
+export const metadata = { title: "Community Guidelines — SafeKelowna" };
 
 export default function GuidelinesPage() {
   return (
     <StaticPage
       title="Community Guidelines"
-      subtitle="How we keep GeoDASH useful and safe"
+      subtitle="How we keep SafeKelowna useful and safe"
       updated="July 2026"
     >
       <p>
-        GeoDASH works because neighbours trust each other. These guidelines apply to every report,
+        SafeKelowna works because neighbours trust each other. These guidelines apply to every report,
         listing, comment, and message on the platform.
       </p>
 
       <h2>🚨 Emergencies go to 911 — always</h2>
       <p>
-        <strong>GeoDASH is not an emergency service and is not monitored in real time.</strong> If a
+        <strong>SafeKelowna is not an emergency service and is not monitored in real time.</strong> If a
         crime is in progress or someone is in danger, call 911. For non-emergency police matters,
         call the Kelowna RCMP non-emergency line at 250-762-3300.
       </p>

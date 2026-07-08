@@ -168,7 +168,7 @@ export default function Landing() {
     {
       icon: "🏆",
       title: "Community Reputation",
-      body: "Every approved report and returned item earns XP. Climb from New Member to GeoDASH Guardian on the leaderboard.",
+      body: "Every approved report and returned item earns reputation. Climb the ranks on the community leaderboard.",
       href: "/leaderboard",
       cta: "See leaderboard",
     },
@@ -188,16 +188,14 @@ export default function Landing() {
         <OkanaganScene />
         <div className="hero-content">
           <div className="cyber-sub" style={{ marginBottom: 18 }}>
-            Okanagan · Community · Safety
+            Community Safety &amp; Local Alerts
           </div>
           <h1 className="hero-title">
-            Keep Kelowna
-            <br />
-            beautiful &amp; safe
+            SafeKelowna
           </h1>
           <p className="hero-tag">
-            A community-run safety map and lost &amp; found for wine country — from the vineyards of
-            Mission Hill to the shores of Okanagan Lake.
+            An independent community safety platform for Kelowna and the Central Okanagan — a public
+            safety map, local alerts, and lost &amp; found, kept up to date by neighbours.
           </p>
           <div style={{ display: "flex", gap: 14, justifyContent: "center", marginTop: 30, flexWrap: "wrap" }}>
             <Link href="/map" style={{ textDecoration: "none" }}>
@@ -333,9 +331,9 @@ export default function Landing() {
           lineHeight: 1.6,
         }}
       >
-        <b style={{ color: "var(--text-mid)" }}>Disclaimer:</b> Kelowna GeoDASH is an independent
-        community platform and is not an official RCMP, City of Kelowna, or police website. Incident
-        locations may be approximate.
+        <b style={{ color: "var(--text-mid)" }}>Disclaimer:</b> SafeKelowna is an independent
+        community safety platform and is not affiliated with the RCMP, City of Kelowna, or any
+        government agency. Always call 911 in emergencies. Incident locations may be approximate.
       </footer>
     </div>
   );

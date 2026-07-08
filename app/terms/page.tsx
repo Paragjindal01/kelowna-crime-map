@@ -1,24 +1,24 @@
 import StaticPage from "../components/StaticPage";
 
-export const metadata = { title: "Terms of Service — Kelowna GeoDASH" };
+export const metadata = { title: "Terms of Service — SafeKelowna" };
 
 export default function TermsPage() {
   return (
-    <StaticPage title="Terms of Service" subtitle="The agreement governing your use of GeoDASH" updated="July 6, 2026">
+    <StaticPage title="Terms of Service" subtitle="The agreement governing your use of SafeKelowna" updated="July 6, 2026">
       <p>
         These Terms of Service (&ldquo;Terms&rdquo;) govern your access to and use of Kelowna
-        GeoDASH (&ldquo;GeoDASH&rdquo;, &ldquo;the platform&rdquo;). By creating an account or
+        SafeKelowna (&ldquo;SafeKelowna&rdquo;, &ldquo;the platform&rdquo;). By creating an account or
         using the platform, you agree to these Terms and to our{" "}
         <a href="/privacy">Privacy Policy</a> and <a href="/guidelines">Community Guidelines</a>.
         If you do not agree, do not use the platform.
       </p>
 
-      <h2>1. About GeoDASH</h2>
+      <h2>1. About SafeKelowna</h2>
       <p>
-        GeoDASH is an independent, community-operated safety information and lost &amp; found
+        SafeKelowna is an independent, community-operated safety information and lost &amp; found
         platform for Kelowna and the Central Okanagan.{" "}
         <strong>
-          GeoDASH is not affiliated with, endorsed by, or operated by the RCMP, the City of
+          SafeKelowna is not affiliated with, endorsed by, or operated by the RCMP, the City of
           Kelowna, or any government agency.
         </strong>{" "}
         It is not an emergency service. In an emergency, always call 911.
@@ -75,7 +75,7 @@ export default function TermsPage() {
       <h2>7. Content licence and copyright</h2>
       <ul>
         <li>
-          You retain ownership of content you submit. You grant GeoDASH a non-exclusive,
+          You retain ownership of content you submit. You grant SafeKelowna a non-exclusive,
           royalty-free, worldwide licence to host, display, and distribute that content on the
           platform for as long as it remains published.
         </li>
@@ -94,13 +94,13 @@ export default function TermsPage() {
       <ul>
         <li>All information is provided &ldquo;as is&rdquo; for general awareness only, without warranty of any kind.</li>
         <li>Incident locations may be approximate. Reports may contain errors despite moderation.</li>
-        <li>Do not rely on GeoDASH for emergency decisions. GeoDASH does not replace 911, police, fire, or ambulance services.</li>
+        <li>Do not rely on SafeKelowna for emergency decisions. SafeKelowna does not replace 911, police, fire, or ambulance services.</li>
         <li>We are not responsible for interactions between members, including in-person meetings to return items. Meet in public places.</li>
       </ul>
 
       <h2>9. Limitation of liability</h2>
       <p>
-        To the maximum extent permitted by law, GeoDASH and its operators shall not be liable for
+        To the maximum extent permitted by law, SafeKelowna and its operators shall not be liable for
         any indirect, incidental, special, consequential, or punitive damages, or any loss of
         data, safety, property, or goodwill, arising from your use of (or inability to use) the
         platform, reliance on any content, or interactions with other users. Where liability
@@ -109,7 +109,7 @@ export default function TermsPage() {
 
       <h2>10. Indemnification</h2>
       <p>
-        You agree to indemnify and hold harmless GeoDASH and its operators from claims arising out
+        You agree to indemnify and hold harmless SafeKelowna and its operators from claims arising out
         of your content, your use of the platform, or your violation of these Terms.
       </p>
 

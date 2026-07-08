@@ -4,7 +4,10 @@ export default function Footer() {
   return (
     <footer className="site-footer-wrap">
       <div className="site-footer">
-        <span className="site-footer__left">© 2026 GeoDASH. All Rights Reserved.</span>
+        <span className="site-footer__left">
+          © 2026 SafeKelowna. All rights reserved. Built by Parag Jindal.
+          <span style={{ color: "var(--text-dim)", marginLeft: 6 }}>· Powered by GeoDASH</span>
+        </span>
 
         <nav className="site-footer__links" aria-label="Legal and info">
           <a href="/about">About</a>
@@ -46,10 +49,10 @@ export default function Footer() {
       </div>
 
       <div className="site-footer__disclaimer">
-        GeoDASH is an independent community safety platform and is not affiliated with the RCMP,
-        City of Kelowna, or any government agency. Public information is collected from publicly
-        available sources; community submissions are moderated before publication. Locations may be
-        approximate. <strong>In an emergency, always call 911.</strong>
+        SafeKelowna is an independent community safety platform and is not affiliated with the RCMP,
+        City of Kelowna, or any government agency. <strong>Always call 911 in emergencies.</strong>{" "}
+        Public information is collected from publicly available sources; community submissions are
+        moderated before publication and locations may be approximate.
       </div>
     </footer>
   );

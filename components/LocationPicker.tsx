@@ -9,8 +9,7 @@ const kelownaCenter: [number, number] = [49.888, -119.496];
 function pinIcon() {
   return L.divIcon({
     className: "",
-    html: `<div class="neon-marker" style="--marker-color:#d9a45b">
-      <span class="neon-marker__ring"></span>
+    html: `<div class="neon-marker" style="--marker-color:#2f5d50">
       <span class="neon-marker__core">📍</span>
     </div>`,
     iconSize: [34, 34],
@@ -37,7 +36,7 @@ export default function LocationPicker({
     if (!containerRef.current || mapRef.current) return;
 
     const map = L.map(containerRef.current, { zoomControl: true }).setView(kelownaCenter, 12);
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
       attribution: '&copy; OpenStreetMap &copy; CARTO',
       subdomains: "abcd",
       maxZoom: 19,
@@ -80,7 +79,7 @@ export default function LocationPicker({
         height: 260,
         borderRadius: 10,
         overflow: "hidden",
-        border: "1px solid rgba(217, 164, 91, 0.3)",
+        border: "1px solid var(--glass-border)",
         cursor: "crosshair",
       }}
     />

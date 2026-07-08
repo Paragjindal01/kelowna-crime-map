@@ -35,7 +35,7 @@ export default function LoginPage() {
     <main style={{ height: "100%", overflow: "auto", padding: "70px 24px" }}>
       <div className="glass-panel" style={{ maxWidth: 420, margin: "0 auto", padding: 34 }}>
         <h1 className="cyber-title" style={{ margin: 0, fontSize: "1.7rem" }}>Welcome back</h1>
-        <div className="cyber-sub" style={{ marginTop: 8, marginBottom: 26 }}>Sign in to GeoDASH</div>
+        <div className="cyber-sub" style={{ marginTop: 8, marginBottom: 26 }}>Sign in to SafeKelowna</div>
 
         {error && (
           <p style={{ color: "#c94f4f", fontWeight: 600, marginBottom: 16 }}>⚠ {error}</p>
@@ -56,7 +56,7 @@ export default function LoginPage() {
         </form>
 
         <p style={{ color: "var(--text-mid)", marginTop: 22, marginBottom: 0, textAlign: "center" }}>
-          New to GeoDASH?{" "}
+          New to SafeKelowna?{" "}
           <Link href="/signup" style={{ color: "var(--accent)", fontWeight: 600 }}>
             Create an account
           </Link>

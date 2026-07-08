@@ -1,7 +1,7 @@
 import PublicMapClient from "../../components/PublicMapClient";
 
 export const metadata = {
-  title: "Live Map — Kelowna GeoDASH",
+  title: "Live Map — SafeKelowna",
 };
 
 export default function MapPage() {

@@ -4,9 +4,9 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
 export const metadata = {
-  title: "Kelowna GeoDASH — Community Safety & Lost + Found",
+  title: "SafeKelowna — Community Safety & Local Alerts",
   description:
-    "Community-run safety map and lost & found for Kelowna and the Okanagan.",
+    "SafeKelowna is an independent community safety platform for Kelowna and the Central Okanagan — a public safety map, local alerts, and lost & found. Powered by GeoDASH.",
 };
 
 export default function RootLayout({

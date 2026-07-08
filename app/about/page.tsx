@@ -1,12 +1,12 @@
 import StaticPage from "../components/StaticPage";
 
-export const metadata = { title: "About — Kelowna GeoDASH" };
+export const metadata = { title: "About — SafeKelowna" };
 
 export default function AboutPage() {
   return (
-    <StaticPage title="About GeoDASH" subtitle="A community platform for a safer Okanagan">
+    <StaticPage title="About SafeKelowna" subtitle="A community platform for a safer Okanagan">
       <p>
-        Kelowna GeoDASH is an independent, community-run platform that brings together a live
+        SafeKelowna is an independent, community-run platform that brings together a live
         public-safety map, community alerts, and a lost &amp; found service for Kelowna and the
         Central Okanagan. It is built on a simple idea:{" "}
         <strong>neighbours looking out for neighbours.</strong>
@@ -32,12 +32,12 @@ export default function AboutPage() {
       <h2>Disclaimer</h2>
       <ul>
         <li>
-          <strong>GeoDASH is not an emergency service.</strong> In an emergency, always call{" "}
+          <strong>SafeKelowna is not an emergency service.</strong> In an emergency, always call{" "}
           <strong>911</strong>. For non-emergency police matters, call the Kelowna RCMP at
           250-762-3300.
         </li>
         <li>
-          GeoDASH is an independent platform and is <strong>not affiliated with the RCMP, the City
+          SafeKelowna is an independent platform and is <strong>not affiliated with the RCMP, the City
           of Kelowna, or any government agency</strong>.
         </li>
         <li>Incident locations may be approximate — news reports rarely include exact coordinates.</li>
@@ -59,7 +59,7 @@ export default function AboutPage() {
 
       <h2>Who builds this</h2>
       <p>
-        GeoDASH is designed and developed by{" "}
+        SafeKelowna is designed and developed by{" "}
         <a href="https://www.instagram.com/paragjindal23/" target="_blank" rel="noopener noreferrer">
           Parag Jindal
         </a>

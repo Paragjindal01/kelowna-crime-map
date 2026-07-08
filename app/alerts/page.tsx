@@ -8,7 +8,7 @@ import { ALERT_CATEGORIES, alertCategory, severityInfo } from "@/lib/categories"
 const LocationPicker = dynamic(() => import("../../components/LocationPicker"), {
   ssr: false,
   loading: () => (
-    <div style={{ height: 220, display: "grid", placeItems: "center", color: "var(--text-dim)", border: "1px solid rgba(217,164,91,0.2)", borderRadius: 10 }}>
+    <div style={{ height: 220, display: "grid", placeItems: "center", color: "var(--text-dim)", border: "1px solid var(--glass-border)", borderRadius: 8 }}>
       Loading map…
     </div>
   ),
@@ -153,6 +153,7 @@ export default function AlertsPage() {
   const [form, setForm] = useState({ category: "road_closure", title: "", location: "", description: "", severity: 2, lat: "", lng: "" });
   const [submitState, setSubmitState] = useState<"idle" | "busy" | "done" | "error">("idle");
   const [submitError, setSubmitError] = useState("");
+  const [showPreview, setShowPreview] = useState(false);
 
   const load = () =>
     fetch("/api/alerts")
@@ -195,8 +196,13 @@ export default function AlertsPage() {
     load();
   };
 
-  const submit = async (e: React.FormEvent) => {
+  const goToPreview = (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitState("idle");
+    setShowPreview(true);
+  };
+
+  const submitForReview = async () => {
     setSubmitState("busy");
     setSubmitError("");
     try {
@@ -213,6 +219,7 @@ export default function AlertsPage() {
       if (!res.ok) throw new Error(data.error || "Failed to submit");
       setSubmitState("done");
       setForm({ category: "road_closure", title: "", location: "", description: "", severity: 2, lat: "", lng: "" });
+      setShowPreview(false);
     } catch (err: any) {
       setSubmitError(err.message);
       setSubmitState("error");
@@ -246,14 +253,14 @@ export default function AlertsPage() {
               New alert · reviewed by moderators before going live
             </div>
             {submitState === "done" && (
-              <div style={{ color: "var(--vine)", fontWeight: 600, marginBottom: 16 }}>
+              <div style={{ color: "var(--success)", fontWeight: 600, marginBottom: 16 }}>
                 ✓ Submitted! Your alert will appear once approved.
               </div>
             )}
             {submitState === "error" && (
-              <div style={{ color: "#c94f4f", fontWeight: 600, marginBottom: 16 }}>⚠ {submitError}</div>
+              <div style={{ color: "var(--danger)", fontWeight: 600, marginBottom: 16 }}>⚠ {submitError}</div>
             )}
-            <form onSubmit={submit} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
+            <form onSubmit={goToPreview} style={{ display: showPreview ? "none" : "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
               <div>
                 <label className="cyber-label" style={{ display: "block", marginBottom: 6 }}>Category</label>
                 <select className="cyber-select" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
@@ -293,11 +300,37 @@ export default function AlertsPage() {
                 />
               </div>
               <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "flex-end" }}>
-                <button type="submit" className="cyber-btn" disabled={submitState === "busy"}>
-                  {submitState === "busy" ? "Submitting..." : "Submit alert"}
-                </button>
+                <button type="submit" className="cyber-btn">Preview alert</button>
               </div>
             </form>
+
+            {showPreview && (
+              <div>
+                <div style={{ padding: "8px 12px", borderRadius: 6, background: "#f1efe8", border: "1px solid var(--glass-border)", color: "var(--text-mid)", fontSize: "0.85rem", marginBottom: 18 }}>
+                  Review your alert before submitting. Nothing is saved until you choose <strong>Submit for Review</strong>.
+                </div>
+                <div className="hud-card" style={{ padding: 20, borderLeft: `3px solid ${alertCategory(form.category).color}` }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                    <strong style={{ fontFamily: "var(--font-display)", fontSize: "1.1rem", color: "var(--text-hi)" }}>
+                      {alertCategory(form.category).emoji} {form.title || "—"}
+                    </strong>
+                    <span className="status-pill status-pill--pending">Pending admin approval</span>
+                  </div>
+                  <dl style={{ margin: "14px 0 0", display: "grid", gridTemplateColumns: "auto 1fr", gap: "8px 16px", fontSize: "0.92rem" }}>
+                    <dt style={{ color: "var(--text-mid)" }}>Category</dt><dd style={{ margin: 0 }}>{alertCategory(form.category).label}</dd>
+                    <dt style={{ color: "var(--text-mid)" }}>Severity</dt><dd style={{ margin: 0 }}>{severityInfo(form.severity).label}</dd>
+                    <dt style={{ color: "var(--text-mid)" }}>Location</dt><dd style={{ margin: 0 }}>{form.location || "—"} <span style={{ color: "var(--text-dim)" }}>(approximate)</span></dd>
+                    <dt style={{ color: "var(--text-mid)" }}>Details</dt><dd style={{ margin: 0 }}>{form.description || "—"}</dd>
+                  </dl>
+                </div>
+                <div style={{ display: "flex", gap: 12, marginTop: 18, justifyContent: "flex-end" }}>
+                  <button onClick={() => setShowPreview(false)} className="cyber-btn cyber-btn--ghost">Edit</button>
+                  <button onClick={submitForReview} disabled={submitState === "busy"} className="cyber-btn">
+                    {submitState === "busy" ? "Submitting…" : "Submit for Review"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

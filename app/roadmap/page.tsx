@@ -56,7 +56,7 @@ export default function RoadmapPage() {
             Built with the community, for the community
           </div>
           <p style={{ color: "var(--text-mid)", maxWidth: 560, margin: "16px auto 0", lineHeight: 1.65 }}>
-            GeoDASH grows based on what actually helps Kelowna. Vote for the features you want —
+            SafeKelowna grows based on what actually helps Kelowna. Vote for the features you want —
             the most-requested ones get built first.
           </p>
         </div>

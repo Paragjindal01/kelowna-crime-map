@@ -255,6 +255,7 @@ export default function LostFoundPage() {
   const [previews, setPreviews] = useState<string[]>([]);
   const [submitState, setSubmitState] = useState<"idle" | "busy" | "done" | "error">("idle");
   const [submitError, setSubmitError] = useState("");
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -281,8 +282,15 @@ export default function LostFoundPage() {
     );
   }, [items, statusFilter, catFilter, query]);
 
-  const submit = async (e: React.FormEvent) => {
+  // Step 1: validate then show the preview (nothing saved yet).
+  const goToPreview = (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitState("idle");
+    setShowPreview(true);
+  };
+
+  // Step 2: submit for review.
+  const submitForReview = async () => {
     setSubmitState("busy");
     setSubmitError("");
     try {
@@ -296,6 +304,7 @@ export default function LostFoundPage() {
       setForm({ title: "", category: "electronics", location: "", dateLost: "", description: "" });
       setPhotos([]);
       setPreviews([]);
+      setShowPreview(false);
     } catch (err: any) {
       setSubmitError(err.message);
       setSubmitState("error");
@@ -329,14 +338,14 @@ export default function LostFoundPage() {
               New listing · reviewed by moderators before going live
             </div>
             {submitState === "done" && (
-              <div style={{ color: "var(--vine)", fontWeight: 600, marginBottom: 16 }}>
+              <div style={{ color: "var(--success)", fontWeight: 600, marginBottom: 16 }}>
                 ✓ Submitted! Your listing will appear once approved.
               </div>
             )}
             {submitState === "error" && (
-              <div style={{ color: "#c94f4f", fontWeight: 600, marginBottom: 16 }}>⚠ {submitError}</div>
+              <div style={{ color: "var(--danger)", fontWeight: 600, marginBottom: 16 }}>⚠ {submitError}</div>
             )}
-            <form onSubmit={submit} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
+            <form onSubmit={goToPreview} style={{ display: showPreview ? "none" : "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
               <div>
                 <label className="cyber-label" style={{ display: "block", marginBottom: 6 }}>What did you lose?</label>
                 <input className="cyber-input" required maxLength={80} placeholder="Black iPhone 15 with grape sticker" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
@@ -377,16 +386,49 @@ export default function LostFoundPage() {
                   />
                 </label>
                 {previews.map((src, i) => (
-                  <img key={i} src={src} alt={`preview ${i + 1}`} style={{ height: 64, borderRadius: 10, border: "1px solid rgba(217,164,91,0.35)" }} />
+                  <img key={i} src={src} alt={`preview ${i + 1}`} style={{ height: 64, borderRadius: 8, border: "1px solid var(--glass-border)" }} />
                 ))}
                 <span style={{ color: "var(--text-dim)", fontSize: "0.72rem" }}>
                   Up to 3 · JPEG/PNG/WebP · max 3MB each
                 </span>
-                <button type="submit" className="cyber-btn" disabled={submitState === "busy"} style={{ marginLeft: "auto" }}>
-                  {submitState === "busy" ? "Submitting..." : "Submit listing"}
+                <button type="submit" className="cyber-btn" style={{ marginLeft: "auto" }}>
+                  Preview listing
                 </button>
               </div>
             </form>
+
+            {showPreview && (
+              <div>
+                <div style={{ padding: "8px 12px", borderRadius: 6, background: "#f1efe8", border: "1px solid var(--glass-border)", color: "var(--text-mid)", fontSize: "0.85rem", marginBottom: 18 }}>
+                  Review your listing before submitting. Nothing is saved until you choose <strong>Submit for Review</strong>.
+                </div>
+                <div className="hud-card" style={{ padding: 20 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                    <strong style={{ fontFamily: "var(--font-display)", fontSize: "1.1rem", color: "var(--text-hi)" }}>{form.title || "—"}</strong>
+                    <span className="status-pill status-pill--pending">Pending admin approval</span>
+                  </div>
+                  {previews.length > 0 && (
+                    <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+                      {previews.map((src, i) => (
+                        <img key={i} src={src} alt={`preview ${i + 1}`} style={{ height: 80, width: 80, objectFit: "cover", borderRadius: 8, border: "1px solid var(--glass-border)" }} />
+                      ))}
+                    </div>
+                  )}
+                  <dl style={{ margin: "14px 0 0", display: "grid", gridTemplateColumns: "auto 1fr", gap: "8px 16px", fontSize: "0.92rem" }}>
+                    <dt style={{ color: "var(--text-mid)" }}>Category</dt><dd style={{ margin: 0 }}>{CATEGORIES.find((c) => c.value === form.category)?.label ?? form.category}</dd>
+                    <dt style={{ color: "var(--text-mid)" }}>Location</dt><dd style={{ margin: 0 }}>{form.location || "—"} <span style={{ color: "var(--text-dim)" }}>(approximate)</span></dd>
+                    <dt style={{ color: "var(--text-mid)" }}>Date</dt><dd style={{ margin: 0 }}>{form.dateLost ? new Date(form.dateLost).toLocaleString("en-CA", { dateStyle: "medium", timeStyle: "short" }) : "—"}</dd>
+                    <dt style={{ color: "var(--text-mid)" }}>Details</dt><dd style={{ margin: 0 }}>{form.description || "—"}</dd>
+                  </dl>
+                </div>
+                <div style={{ display: "flex", gap: 12, marginTop: 18, justifyContent: "flex-end" }}>
+                  <button onClick={() => setShowPreview(false)} className="cyber-btn cyber-btn--ghost">Edit</button>
+                  <button onClick={submitForReview} disabled={submitState === "busy"} className="cyber-btn">
+                    {submitState === "busy" ? "Submitting…" : "Submit for Review"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

@@ -1,13 +1,13 @@
 import StaticPage from "../components/StaticPage";
 
-export const metadata = { title: "Contact — Kelowna GeoDASH" };
+export const metadata = { title: "Contact — SafeKelowna" };
 
 export default function ContactPage() {
   return (
-    <StaticPage title="Contact" subtitle="Get in touch with the GeoDASH team">
+    <StaticPage title="Contact" subtitle="Get in touch with the SafeKelowna team">
       <h2>🚨 Emergencies</h2>
       <p>
-        <strong>GeoDASH is not monitored in real time.</strong> If a crime is in progress or someone
+        <strong>SafeKelowna is not monitored in real time.</strong> If a crime is in progress or someone
         is in danger, call <strong>911</strong>. Kelowna RCMP non-emergency:{" "}
         <strong>250-762-3300</strong>.
       </p>

@@ -91,14 +91,15 @@ function getIconEmoji(type: string) {
 
 function getMarkerColor(type: string) {
   const t = (type || "").toLowerCase();
-  if (t === "camera") return "#8a5c8f";
-  if (t.includes("vehicle")) return "#c96f4a";
-  if (t.includes("break")) return "#d9a45b";
-  if (t.includes("theft") || t.includes("shoplift")) return "#a04a68";
-  if (t.includes("mischief") || t.includes("vandalism")) return "#e3c975";
-  if (t.includes("assault")) return "#c94f4f";
-  if (t.includes("fraud")) return "#7fa35c";
-  return "#c98ba6";
+  // Civic crime-report palette (deep red family for crime, slate for cameras)
+  if (t === "camera") return "#475467";       // slate gray
+  if (t.includes("vehicle")) return "#b45309"; // amber
+  if (t.includes("break")) return "#9a1d13";
+  if (t.includes("theft") || t.includes("shoplift")) return "#b42318"; // deep red
+  if (t.includes("mischief") || t.includes("vandalism")) return "#8a6f3d";
+  if (t.includes("assault") || t.includes("harass")) return "#991b1b"; // dark red
+  if (t.includes("fraud")) return "#475467";
+  return "#b42318";
 }
 
 function getCleanLabel(type: string) {
@@ -162,16 +163,16 @@ function alertPopupHtml(a: AlertRow) {
         </span>
       </div>
       <div style="margin-top:4px; font-size:0.78em; display:flex; gap:6px; flex-wrap:wrap">
-        <span style="padding:1px 8px; border-radius:999px; border:1px solid ${cat.color}66; color:${cat.color}">${cat.label}</span>
-        <span style="padding:1px 8px; border-radius:999px; border:1px solid ${a.status === "active" ? "#c9302c66" : "#7fa35c66"}; color:${a.status === "active" ? "#e05038" : "#7fa35c"}">${a.status.toUpperCase()}</span>
-        ${a.isVerified ? '<span style="padding:1px 8px; border-radius:999px; border:1px solid #7fa35c66; color:#7fa35c">✔ VERIFIED</span>' : ""}
+        <span style="padding:1px 8px; border-radius:4px; border:1px solid ${cat.color}55; color:${cat.color}">${cat.label}</span>
+        <span style="padding:1px 8px; border-radius:4px; border:1px solid ${a.status === "active" ? "#b4231855" : "#2e7d3255"}; color:${a.status === "active" ? "#b42318" : "#2e7d32"}">${a.status.toUpperCase()}</span>
+        ${a.isVerified ? '<span style="padding:1px 8px; border-radius:4px; border:1px solid #2e7d3255; color:#2e7d32">✔ VERIFIED</span>' : ""}
       </div>
-      <div style="margin-top:8px; font-size:0.92em; line-height:1.55; color:#f6ede1">
-        <div><span style="color:#c0ab97">WHERE //</span> ${esc(a.location)} ${a.locationApproximate ? '<span style="color:#8d7460; font-size:0.85em;">(approx.)</span>' : ""}</div>
-        <div><span style="color:#c0ab97">WHEN //</span> ${fmt(a.startsAt)}</div>
-        ${a.sourceName ? `<div><span style="color:#c0ab97">SOURCE //</span> ${a.sourceUrl ? `<a href="${esc(a.sourceUrl)}" target="_blank" rel="noopener noreferrer" style="color:#d9a45b">${esc(a.sourceName)}</a>` : esc(a.sourceName)}</div>` : ""}
-        ${a.description ? `<div style="margin-top:6px; padding-top:6px; border-top:1px solid rgba(217,164,91,0.18); color:#e3d3bf;">${esc(a.description)}</div>` : ""}
-        <div style="margin-top:6px; font-size:0.8em; color:#8d7460">Published ${fmt(a.createdAt)} · Updated ${fmt(a.updatedAt)}</div>
+      <div style="margin-top:8px; font-size:0.92em; line-height:1.55; color:#1f2933">
+        <div><span style="color:#667085">Where:</span> ${esc(a.location)} ${a.locationApproximate ? '<span style="color:#98a2b3; font-size:0.85em;">(approx.)</span>' : ""}</div>
+        <div><span style="color:#667085">When:</span> ${fmt(a.startsAt)}</div>
+        ${a.sourceName ? `<div><span style="color:#667085">Source:</span> ${a.sourceUrl ? `<a href="${esc(a.sourceUrl)}" target="_blank" rel="noopener noreferrer" style="color:#2f5d50">${esc(a.sourceName)}</a>` : esc(a.sourceName)}</div>` : ""}
+        ${a.description ? `<div style="margin-top:6px; padding-top:6px; border-top:1px solid #e6e3da; color:#344054;">${esc(a.description)}</div>` : ""}
+        <div style="margin-top:6px; font-size:0.8em; color:#98a2b3">Published ${fmt(a.createdAt)} · Updated ${fmt(a.updatedAt)}</div>
       </div>
     </div>
   `;
@@ -208,17 +209,17 @@ function popupHtml(r: Report) {
   return `
     <div style="font-family:var(--font-body); min-width:200px">
       <div style="display:flex; align-items:center; gap:8px;">
-        <span style="font-family:var(--font-display); font-size:0.8rem; letter-spacing:0.08em; text-transform:uppercase; color:${color}; text-shadow:0 0 10px ${color}">
+        <span style="font-family:var(--font-display); font-size:0.8rem; letter-spacing:0.04em; text-transform:uppercase; color:${color}">
           ${getCleanLabel(r.type)}
         </span>
-        <span title="Verified" style="color:#7fa35c; text-shadow:0 0 8px #7fa35c">✓</span>
+        <span title="Verified" style="color:#2e7d32">✓</span>
       </div>
-      <div style="margin-top:8px; font-size:0.95em; line-height:1.55; color:#f6ede1">
-        <div><span style="color:#c0ab97">DATE //</span> ${date}</div>
-        <div><span style="color:#c0ab97">AREA //</span> ${esc(r.address ?? "Unknown")} ${r.locationApproximate ? '<span style="color:#8d7460; font-size:0.85em;">(approx.)</span>' : ""}</div>
-        ${r.sourceName ? `<div><span style="color:#c0ab97">SOURCE //</span> ${r.sourceUrl ? `<a href="${esc(r.sourceUrl)}" target="_blank" rel="noopener noreferrer" style="color:#d9a45b">${esc(r.sourceName)}</a>` : esc(r.sourceName)}</div>` : ""}
-        ${r.description ? `<div style="margin-top:6px; padding-top:6px; border-top:1px solid rgba(217,164,91,0.18); color:#e3d3bf;">${esc(r.description)}</div>` : ""}
-        ${r.createdAt ? `<div style="margin-top:6px; font-size:0.8em; color:#8d7460">Published ${new Intl.DateTimeFormat("en-CA", { timeZone: "America/Vancouver", month: "short", day: "numeric", year: "numeric" }).format(new Date(r.createdAt))}${r.updatedAt && r.updatedAt !== r.createdAt ? ` · Updated ${new Intl.DateTimeFormat("en-CA", { timeZone: "America/Vancouver", month: "short", day: "numeric" }).format(new Date(r.updatedAt))}` : ""} · Status: approved</div>` : ""}
+      <div style="margin-top:8px; font-size:0.95em; line-height:1.55; color:#1f2933">
+        <div><span style="color:#667085">Date:</span> ${date}</div>
+        <div><span style="color:#667085">Area:</span> ${esc(r.address ?? "Unknown")} ${r.locationApproximate ? '<span style="color:#98a2b3; font-size:0.85em;">(approx.)</span>' : ""}</div>
+        ${r.sourceName ? `<div><span style="color:#667085">Source:</span> ${r.sourceUrl ? `<a href="${esc(r.sourceUrl)}" target="_blank" rel="noopener noreferrer" style="color:#2f5d50">${esc(r.sourceName)}</a>` : esc(r.sourceName)}</div>` : ""}
+        ${r.description ? `<div style="margin-top:6px; padding-top:6px; border-top:1px solid #e6e3da; color:#344054;">${esc(r.description)}</div>` : ""}
+        ${r.createdAt ? `<div style="margin-top:6px; font-size:0.8em; color:#98a2b3">Published ${new Intl.DateTimeFormat("en-CA", { timeZone: "America/Vancouver", month: "short", day: "numeric", year: "numeric" }).format(new Date(r.createdAt))}${r.updatedAt && r.updatedAt !== r.createdAt ? ` · Updated ${new Intl.DateTimeFormat("en-CA", { timeZone: "America/Vancouver", month: "short", day: "numeric" }).format(new Date(r.updatedAt))}` : ""} · Status: approved</div>` : ""}
       </div>
     </div>
   `;
@@ -239,7 +240,7 @@ function LiveClock() {
         fontFamily: "var(--font-mono)",
         fontSize: "0.78rem",
         color: "var(--accent)",
-        textShadow: "0 0 8px rgba(217,164,91,0.6)",
+        textShadow: "none",
       }}
     >
       {now
@@ -449,8 +450,8 @@ export default function PublicMap() {
         .addTo(layer)
         .bindPopup(`
           <div style="font-family:var(--font-body)">
-            <span style="font-family:var(--font-display); font-size:0.8rem; letter-spacing:0.08em; text-transform:uppercase; color:#a04a68; text-shadow:0 0 10px #a04a68">${esc(cam.name)}</span>
-            <div style="margin-top:6px; color:#f6ede1"><span style="color:#c0ab97">TYPE //</span> ${esc(cam.type)}</div>
+            <span style="font-family:var(--font-display); font-size:0.8rem; letter-spacing:0.04em; text-transform:uppercase; color:#475467">${esc(cam.name)}</span>
+            <div style="margin-top:6px; color:#1f2933"><span style="color:#667085">Type:</span> ${esc(cam.type)}</div>
           </div>
         `);
     }
@@ -467,7 +468,7 @@ export default function PublicMap() {
           fontFamily: "var(--font-mono)",
           color: "var(--accent)",
           letterSpacing: "0.3em",
-          textShadow: "0 0 12px rgba(217,164,91,0.6)",
+          textShadow: "none",
         }}
       >
         INITIALIZING GRID...
@@ -505,10 +506,10 @@ export default function PublicMap() {
       >
         <div>
           <h2 className="cyber-title" style={{ margin: 0, fontSize: "1.3rem" }}>
-            Kelowna GeoDASH
+            SafeKelowna
           </h2>
           <div className="cyber-sub" style={{ marginTop: 6 }}>
-            Public Safety Grid
+            Community Safety Map
           </div>
           <div
             style={{
@@ -518,8 +519,8 @@ export default function PublicMap() {
               marginTop: 12,
               padding: "8px 12px",
               borderRadius: 8,
-              border: "1px solid rgba(217, 164, 91, 0.18)",
-              background: "rgba(217, 164, 91, 0.05)",
+              border: "1px solid var(--glass-border)",
+              background: "var(--bg-subtle)",
             }}
           >
             <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -594,7 +595,7 @@ export default function PublicMap() {
                 fontSize: "1.5rem",
                 fontWeight: 700,
                 color: "var(--accent)",
-                textShadow: "0 0 14px rgba(217,164,91,0.6)",
+                textShadow: "none",
               }}
             >
               {loading ? "··" : filtered.length}
@@ -609,7 +610,7 @@ export default function PublicMap() {
                 fontSize: "1.5rem",
                 fontWeight: 700,
                 color: "var(--wine)",
-                textShadow: "0 0 14px rgba(160,74,104,0.7)",
+                textShadow: "none",
               }}
             >
               {loading ? "··" : cameras.length}
@@ -624,8 +625,8 @@ export default function PublicMap() {
             gap: 10,
             padding: "10px 12px",
             borderRadius: 8,
-            border: "1px solid rgba(217, 164, 91, 0.2)",
-            background: "rgba(217, 164, 91, 0.04)",
+            border: "1px solid var(--glass-border)",
+            background: "var(--bg-subtle)",
             cursor: "pointer",
           }}
         >
@@ -633,7 +634,7 @@ export default function PublicMap() {
             type="checkbox"
             checked={showAlerts}
             onChange={(e) => setShowAlerts(e.target.checked)}
-            style={{ accentColor: "#d9a45b", width: 16, height: 16 }}
+            style={{ accentColor: "#2f5d50", width: 16, height: 16 }}
           />
           <span style={{ fontSize: "0.88rem", color: "var(--text-hi)", fontWeight: 600 }}>
             📢 Community alerts
@@ -701,7 +702,7 @@ export default function PublicMap() {
         <div
           style={{
             paddingTop: 14,
-            borderTop: "1px solid rgba(217, 164, 91, 0.15)",
+            borderTop: "1px solid var(--glass-border)",
             fontSize: "0.8em",
             color: "var(--text-dim)",
             lineHeight: 1.55,
@@ -712,9 +713,9 @@ export default function PublicMap() {
           are approximate — often a block or intersection, not an exact address.
           <br />
           <br />
-          <b style={{ color: "var(--text-mid)" }}>Disclaimer:</b> Kelowna GeoDASH is an independent
-          public-safety dashboard, not an official RCMP, City of Kelowna, or police website. For
-          emergencies call 911.
+          <b style={{ color: "var(--text-mid)" }}>Disclaimer:</b> SafeKelowna is an independent
+          community safety platform and is not affiliated with the RCMP, City of Kelowna, or any
+          government agency. Always call 911 in emergencies.
         </div>
       </aside>
 
@@ -730,7 +731,7 @@ export default function PublicMap() {
 
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
             subdomains="abcd"
             maxZoom={20}
           />
@@ -745,7 +746,7 @@ export default function PublicMap() {
             inset: 0,
             zIndex: 500,
             pointerEvents: "none",
-            boxShadow: "inset 0 0 120px rgba(0, 0, 0, 0.65), inset 0 0 40px rgba(217, 164, 91, 0.06)",
+            boxShadow: "none",
           }}
         />
       </div>

@@ -13,7 +13,7 @@ export const LEVELS = [
   { level: 2, name: "Community Helper", minXp: 100 },
   { level: 3, name: "Trusted Reporter", minXp: 300 },
   { level: 4, name: "Public Safety Contributor", minXp: 700 },
-  { level: 5, name: "GeoDASH Guardian", minXp: 1500 },
+  { level: 5, name: "Community Guardian", minXp: 1500 },
 ];
 
 export function levelForXp(xp: number) {
