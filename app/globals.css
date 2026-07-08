@@ -689,21 +689,37 @@ body {
 }
 
 /* ---------- site footer ---------- */
-.site-footer {
+.site-footer-wrap {
   position: relative;
   z-index: 10;
+  border-top: 1px solid rgba(217, 164, 91, 0.18);
+  background: rgba(30, 19, 22, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.site-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px 20px;
   flex-wrap: wrap;
-  padding: 12px 22px;
-  border-top: 1px solid rgba(217, 164, 91, 0.18);
-  background: rgba(30, 19, 22, 0.85);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  padding: 12px 22px 8px;
   font-size: 0.78rem;
   color: var(--text-dim);
+}
+
+.site-footer__disclaimer {
+  padding: 0 22px 12px;
+  font-size: 0.7rem;
+  line-height: 1.55;
+  color: var(--text-dim);
+  opacity: 0.85;
+  max-width: 1100px;
+}
+
+.site-footer__disclaimer strong {
+  color: var(--text-mid);
 }
 
 .site-footer__left,

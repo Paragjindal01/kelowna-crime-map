@@ -47,7 +47,19 @@ type Stats = {
   successRate: number;
 };
 
-const TABS = ["reports", "lost items", "users", "statistics"] as const;
+type PendingAlert = {
+  id: string;
+  category: string;
+  title: string;
+  location: string;
+  description?: string | null;
+  severity: number;
+  startsAt: string;
+  createdAt: string;
+  user?: { name: string; email: string } | null;
+};
+
+const TABS = ["reports", "lost items", "alerts", "users", "statistics"] as const;
 
 export default function AdminPage() {
   const [adminKey, setAdminKey] = useState("");
@@ -61,6 +73,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [userQuery, setUserQuery] = useState("");
+  const [alerts, setAlerts] = useState<PendingAlert[]>([]);
 
   const authHeaders = { "x-admin-key": adminKey, "Content-Type": "application/json" };
 
@@ -76,6 +89,10 @@ export default function AdminPage() {
         const res = await fetch("/api/admin/lost-items", { headers: { "x-admin-key": key } });
         if (res.status === 401) throw new Error("Invalid Admin Key");
         setLostItems(await res.json());
+      } else if (which === "alerts") {
+        const res = await fetch("/api/admin/alerts", { headers: { "x-admin-key": key } });
+        if (res.status === 401) throw new Error("Invalid Admin Key");
+        setAlerts(await res.json());
       } else if (which === "users") {
         const res = await fetch("/api/admin/users", { headers: { "x-admin-key": key } });
         if (res.status === 401) throw new Error("Invalid Admin Key");
@@ -113,6 +130,20 @@ export default function AdminPage() {
       });
       if (!res.ok) throw new Error("Failed to update status");
       setReports((prev) => prev.filter((r) => r.id !== id));
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const moderateAlert = async (id: string, moderation: "approved" | "rejected") => {
+    try {
+      const res = await fetch(`/api/admin/alerts/${id}`, {
+        method: "PATCH",
+        headers: authHeaders,
+        body: JSON.stringify({ moderation }),
+      });
+      if (!res.ok) throw new Error("Failed to update alert");
+      setAlerts((prev) => prev.filter((a) => a.id !== id));
     } catch (err: any) {
       alert(err.message);
     }
@@ -268,6 +299,37 @@ export default function AdminPage() {
                   </div>
                   {item.description && <div style={{ color: "var(--text-dim)", fontSize: "0.85rem", marginTop: 6 }}>{item.description}</div>}
                 </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!loading && tab === "alerts" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {alerts.length === 0 && (
+              <div className="glass-panel" style={{ padding: 28, textAlign: "center", color: "var(--text-mid)" }}>
+                Queue clear — no pending alerts to review.
+              </div>
+            )}
+            {alerts.map((a) => (
+              <div key={a.id} className="hud-card" style={{ padding: 18 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+                  <strong style={{ fontFamily: "var(--font-display)", color: "var(--text-hi)" }}>
+                    {a.title}
+                  </strong>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={() => moderateAlert(a.id, "approved")} className="cyber-btn cyber-btn--success" style={{ padding: "6px 14px", fontSize: "0.68rem" }}>Approve</button>
+                    <button onClick={() => moderateAlert(a.id, "rejected")} className="cyber-btn cyber-btn--danger" style={{ padding: "6px 14px", fontSize: "0.68rem" }}>Reject</button>
+                  </div>
+                </div>
+                <div style={{ color: "var(--text-mid)", fontSize: "0.85rem", marginTop: 6 }}>
+                  {a.category.replace(/_/g, " ")} · severity {a.severity} · {a.location}
+                  {a.user ? ` · by ${a.user.name} (${a.user.email})` : ""}
+                </div>
+                <div style={{ color: "var(--text-dim)", fontSize: "0.8rem", marginTop: 4 }}>
+                  Starts: {new Date(a.startsAt).toLocaleString()} · Submitted: {new Date(a.createdAt).toLocaleString()}
+                </div>
+                {a.description && <div style={{ color: "var(--text-dim)", fontSize: "0.85rem", marginTop: 6 }}>{a.description}</div>}
               </div>
             ))}
           </div>

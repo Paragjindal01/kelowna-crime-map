@@ -61,6 +61,7 @@ model User {
   sentMessages  Message[]      @relation("sender")
   threadsAsOwner MessageThread[] @relation("owner")
   threadsAsOther MessageThread[] @relation("other")
+  alerts        Alert[]
 }
 
 model Session {
@@ -133,6 +134,51 @@ model Comment {
   createdAt  DateTime @default(now())
 
   @@index([targetType, targetId, createdAt])
+}
+
+enum AlertCategory {
+  road_closure
+  traffic
+  fire
+  flood
+  power_outage
+  fallen_tree
+  emergency
+  missing_pet
+  community_warning
+  public_notice
+  construction
+  other
+}
+
+enum AlertStatus {
+  active
+  resolved
+}
+
+model Alert {
+  id          String        @id @default(cuid())
+  category    AlertCategory
+  title       String
+  description String?
+  location    String
+  lat         Float?
+  lng         Float?
+  severity    Int           @default(2) // 1=info, 2=caution, 3=danger
+  status      AlertStatus   @default(active)
+  moderation  Moderation    @default(pending)
+  startsAt    DateTime      @default(now())
+  sourceName  String?
+  sourceUrl   String?
+  isVerified  Boolean       @default(false)
+  locationApproximate Boolean @default(true)
+  userId      String?
+  user        User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([moderation, status, startsAt])
+  @@index([category, startsAt])
 }
 
 model FeatureVote {

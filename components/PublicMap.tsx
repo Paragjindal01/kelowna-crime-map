@@ -16,6 +16,7 @@ import "leaflet-control-geocoder"; // ✅ IMPORTANT: correct import (no /dist/..
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MapContainer, TileLayer, ZoomControl } from "react-leaflet";
 import { useMap } from "react-leaflet";
+import { alertCategory } from "@/lib/categories";
 
 function MapSetup({
   onReady,
@@ -42,7 +43,10 @@ type Report = {
   description?: string | null;
   isVerified?: boolean;
   sourceName?: string | null;
+  sourceUrl?: string | null;
   locationApproximate?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 type Camera = {
@@ -50,6 +54,25 @@ type Camera = {
   type: string;
   lat: number;
   lng: number;
+};
+
+type AlertRow = {
+  id: string;
+  category: string;
+  title: string;
+  description?: string | null;
+  location: string;
+  lat?: number | null;
+  lng?: number | null;
+  severity: number;
+  status: "active" | "resolved";
+  startsAt: string;
+  sourceName?: string | null;
+  sourceUrl?: string | null;
+  isVerified: boolean;
+  locationApproximate: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
 
 const kelownaCenter: [number, number] = [49.888, -119.496];
@@ -106,6 +129,54 @@ function makeNeonIcon(type: string) {
   });
 }
 
+function makeAlertIcon(category: string, resolved: boolean) {
+  const cat = alertCategory(category);
+  return L.divIcon({
+    className: "",
+    html: `<div class="neon-marker" style="--marker-color:${cat.color}; ${resolved ? "opacity:0.55" : ""}">
+      ${resolved ? "" : '<span class="neon-marker__ring"></span>'}
+      <span class="neon-marker__core">${cat.emoji}</span>
+    </div>`,
+    iconSize: [34, 34],
+    iconAnchor: [17, 17],
+    popupAnchor: [0, -14],
+  });
+}
+
+function alertPopupHtml(a: AlertRow) {
+  const cat = alertCategory(a.category);
+  const fmt = (d: string) =>
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/Vancouver",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(new Date(d));
+
+  return `
+    <div style="font-family:var(--font-body); min-width:220px; max-width:280px">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+        <span style="font-family:var(--font-display); font-size:0.85rem; font-weight:700; color:${cat.color}">
+          ${cat.emoji} ${esc(a.title)}
+        </span>
+      </div>
+      <div style="margin-top:4px; font-size:0.78em; display:flex; gap:6px; flex-wrap:wrap">
+        <span style="padding:1px 8px; border-radius:999px; border:1px solid ${cat.color}66; color:${cat.color}">${cat.label}</span>
+        <span style="padding:1px 8px; border-radius:999px; border:1px solid ${a.status === "active" ? "#c9302c66" : "#7fa35c66"}; color:${a.status === "active" ? "#e05038" : "#7fa35c"}">${a.status.toUpperCase()}</span>
+        ${a.isVerified ? '<span style="padding:1px 8px; border-radius:999px; border:1px solid #7fa35c66; color:#7fa35c">✔ VERIFIED</span>' : ""}
+      </div>
+      <div style="margin-top:8px; font-size:0.92em; line-height:1.55; color:#f6ede1">
+        <div><span style="color:#c0ab97">WHERE //</span> ${esc(a.location)} ${a.locationApproximate ? '<span style="color:#8d7460; font-size:0.85em;">(approx.)</span>' : ""}</div>
+        <div><span style="color:#c0ab97">WHEN //</span> ${fmt(a.startsAt)}</div>
+        ${a.sourceName ? `<div><span style="color:#c0ab97">SOURCE //</span> ${a.sourceUrl ? `<a href="${esc(a.sourceUrl)}" target="_blank" rel="noopener noreferrer" style="color:#d9a45b">${esc(a.sourceName)}</a>` : esc(a.sourceName)}</div>` : ""}
+        ${a.description ? `<div style="margin-top:6px; padding-top:6px; border-top:1px solid rgba(217,164,91,0.18); color:#e3d3bf;">${esc(a.description)}</div>` : ""}
+        <div style="margin-top:6px; font-size:0.8em; color:#8d7460">Published ${fmt(a.createdAt)} · Updated ${fmt(a.updatedAt)}</div>
+      </div>
+    </div>
+  `;
+}
+
 function makeClusterIcon(cluster: any) {
   return L.divIcon({
     className: "",
@@ -145,8 +216,9 @@ function popupHtml(r: Report) {
       <div style="margin-top:8px; font-size:0.95em; line-height:1.55; color:#f6ede1">
         <div><span style="color:#c0ab97">DATE //</span> ${date}</div>
         <div><span style="color:#c0ab97">AREA //</span> ${esc(r.address ?? "Unknown")} ${r.locationApproximate ? '<span style="color:#8d7460; font-size:0.85em;">(approx.)</span>' : ""}</div>
-        ${r.sourceName ? `<div><span style="color:#c0ab97">SOURCE //</span> ${esc(r.sourceName)}</div>` : ""}
+        ${r.sourceName ? `<div><span style="color:#c0ab97">SOURCE //</span> ${r.sourceUrl ? `<a href="${esc(r.sourceUrl)}" target="_blank" rel="noopener noreferrer" style="color:#d9a45b">${esc(r.sourceName)}</a>` : esc(r.sourceName)}</div>` : ""}
         ${r.description ? `<div style="margin-top:6px; padding-top:6px; border-top:1px solid rgba(217,164,91,0.18); color:#e3d3bf;">${esc(r.description)}</div>` : ""}
+        ${r.createdAt ? `<div style="margin-top:6px; font-size:0.8em; color:#8d7460">Published ${new Intl.DateTimeFormat("en-CA", { timeZone: "America/Vancouver", month: "short", day: "numeric", year: "numeric" }).format(new Date(r.createdAt))}${r.updatedAt && r.updatedAt !== r.createdAt ? ` · Updated ${new Intl.DateTimeFormat("en-CA", { timeZone: "America/Vancouver", month: "short", day: "numeric" }).format(new Date(r.updatedAt))}` : ""} · Status: approved</div>` : ""}
       </div>
     </div>
   `;
@@ -184,16 +256,20 @@ export default function PublicMap() {
   const [mounted, setMounted] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
   const [cameras, setCameras] = useState<Camera[]>([]);
+  const [alerts, setAlerts] = useState<AlertRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // filters
   const [typeFilter, setTypeFilter] = useState("all");
   const [daysBack, setDaysBack] = useState(365);
+  const [keyword, setKeyword] = useState("");
+  const [showAlerts, setShowAlerts] = useState(true);
 
   const mapRef = useRef<L.Map | null>(null);
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
   const cameraLayerRef = useRef<L.LayerGroup | null>(null);
+  const alertLayerRef = useRef<L.LayerGroup | null>(null);
   const geocoderAddedRef = useRef(false);
   const [mapReady, setMapReady] = useState(false);
 
@@ -225,13 +301,16 @@ export default function PublicMap() {
           if (!cancelled) setErrorMsg("Reports could not be loaded. Check database connection.");
         }
 
-        // Fetch cameras
+        // Fetch cameras + community alerts
         const camRes = await fetch("/api/cameras");
         const cameraData = await camRes.json();
+        const alertRes = await fetch("/api/alerts");
+        const alertData = await alertRes.json();
 
         if (!cancelled) {
           setReports(reportData);
           if (Array.isArray(cameraData)) setCameras(cameraData);
+          if (Array.isArray(alertData)) setAlerts(alertData);
         }
       } catch (e) {
         console.error(e);
@@ -256,14 +335,20 @@ export default function PublicMap() {
 
   const filtered = useMemo(() => {
     const cutoff = Date.now() - daysBack * 24 * 60 * 60 * 1000;
+    const q = keyword.trim().toLowerCase();
 
     return (reports || []).filter((r) => {
       const okStatus = (r.status || "").toLowerCase() === "approved";
       const okType = typeFilter === "all" ? true : r.type === typeFilter;
       const okDate = new Date(r.occurredAt).getTime() >= cutoff;
-      return okStatus && okType && okDate && Number.isFinite(r.lat) && Number.isFinite(r.lng);
+      const okKeyword =
+        !q ||
+        (r.address ?? "").toLowerCase().includes(q) ||
+        (r.description ?? "").toLowerCase().includes(q) ||
+        getCleanLabel(r.type).toLowerCase().includes(q);
+      return okStatus && okType && okDate && okKeyword && Number.isFinite(r.lat) && Number.isFinite(r.lng);
     });
-  }, [reports, typeFilter, daysBack]);
+  }, [reports, typeFilter, daysBack, keyword]);
 
   // called once when map is ready
   function onMapReady(map: L.Map) {
@@ -302,6 +387,13 @@ export default function PublicMap() {
       map.addLayer(cameraLayer);
     }
 
+    // ✅ Community alerts layer only once
+    if (!alertLayerRef.current) {
+      const alertLayer = L.layerGroup();
+      alertLayerRef.current = alertLayer;
+      map.addLayer(alertLayer);
+    }
+
     setMapReady(true);
   }
 
@@ -324,6 +416,24 @@ export default function PublicMap() {
       cluster.addLayer(marker);
     }
   }, [filtered, mounted, mapReady]);
+
+  // ✅ community alert markers
+  useEffect(() => {
+    if (!mounted) return;
+
+    const layer = alertLayerRef.current;
+    if (!layer) return;
+
+    layer.clearLayers();
+    if (!showAlerts) return;
+
+    for (const a of alerts) {
+      if (a.lat == null || a.lng == null) continue;
+      L.marker([a.lat, a.lng], { icon: makeAlertIcon(a.category, a.status === "resolved") })
+        .addTo(layer)
+        .bindPopup(alertPopupHtml(a));
+    }
+  }, [alerts, mounted, mapReady, showAlerts]);
 
   // ✅ camera markers once cameras + map are both ready
   useEffect(() => {
@@ -430,6 +540,19 @@ export default function PublicMap() {
         </div>
 
         <div>
+          <label className="cyber-label">Search</label>
+          <input
+            className="cyber-input"
+            type="search"
+            placeholder="Street, area, keyword…"
+            aria-label="Search reports by street, area, or keyword"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            style={{ marginTop: 6 }}
+          />
+        </div>
+
+        <div>
           <label className="cyber-label">Incident Type</label>
           <select
             className="cyber-select"
@@ -493,6 +616,32 @@ export default function PublicMap() {
             </div>
           </div>
         </div>
+
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "10px 12px",
+            borderRadius: 8,
+            border: "1px solid rgba(217, 164, 91, 0.2)",
+            background: "rgba(217, 164, 91, 0.04)",
+            cursor: "pointer",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={showAlerts}
+            onChange={(e) => setShowAlerts(e.target.checked)}
+            style={{ accentColor: "#d9a45b", width: 16, height: 16 }}
+          />
+          <span style={{ fontSize: "0.88rem", color: "var(--text-hi)", fontWeight: 600 }}>
+            📢 Community alerts
+          </span>
+          <span style={{ marginLeft: "auto", color: "var(--text-dim)", fontSize: "0.8rem" }}>
+            {alerts.filter((a) => a.lat != null).length}
+          </span>
+        </label>
 
         {errorMsg && (
           <div
