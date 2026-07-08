@@ -435,6 +435,7 @@ body {
 }
 
 .lf-card__img {
+  position: relative;
   height: 160px;
   background-size: cover;
   background-position: center;

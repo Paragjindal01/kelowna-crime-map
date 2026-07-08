@@ -163,6 +163,20 @@ export default function AdminPage() {
     }
   };
 
+  const deleteItem = async (id: string) => {
+    if (!confirm("Delete this listing and its images permanently?")) return;
+    try {
+      const res = await fetch(`/api/admin/lost-items/${id}`, {
+        method: "DELETE",
+        headers: authHeaders,
+      });
+      if (!res.ok) throw new Error("Failed to delete item");
+      setLostItems((prev) => prev.filter((i) => i.id !== id));
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
   const toggleBan = async (id: string, banned: boolean) => {
     try {
       const res = await fetch(`/api/admin/users/${id}`, {
@@ -292,6 +306,7 @@ export default function AdminPage() {
                     <div style={{ display: "flex", gap: 8 }}>
                       <button onClick={() => moderateItem(item.id, "approved")} className="cyber-btn cyber-btn--success" style={{ padding: "6px 14px", fontSize: "0.68rem" }}>Approve</button>
                       <button onClick={() => moderateItem(item.id, "rejected")} className="cyber-btn cyber-btn--danger" style={{ padding: "6px 14px", fontSize: "0.68rem" }}>Reject</button>
+                      <button onClick={() => deleteItem(item.id)} className="cyber-btn cyber-btn--ghost" style={{ padding: "6px 14px", fontSize: "0.68rem" }}>Delete</button>
                     </div>
                   </div>
                   <div style={{ color: "var(--text-mid)", fontSize: "0.85rem", marginTop: 6 }}>

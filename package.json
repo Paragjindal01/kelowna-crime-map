@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.1.0",
+    "@vercel/blob": "^2.6.0",
     "csv-parse": "^6.1.0",
     "leaflet": "^1.9.4",
     "leaflet-control-geocoder": "^3.3.1",
@@ -21,6 +22,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-leaflet": "^4.2.1",
+    "sharp": "^0.35.3",
     "zod": "^3.23.8"
   },
   "devDependencies": {

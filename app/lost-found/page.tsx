@@ -25,6 +25,7 @@ type Item = {
   location: string;
   dateLost: string;
   imageUrl?: string | null;
+  imageUrls?: string[];
   status: "lost" | "found" | "returned";
   moderation?: string;
   owner?: { id: string; name: string; verified?: boolean; level: { level: number; name: string } } | null;
@@ -140,6 +141,23 @@ function ItemCard({ item, me, index }: { item: Item; me: Me; index: number }) {
         style={item.imageUrl ? { backgroundImage: `url(${item.imageUrl})` } : undefined}
       >
         {!item.imageUrl && catEmoji(item.category)}
+        {(item.imageUrls?.length ?? 0) > 1 && (
+          <span
+            style={{
+              position: "absolute",
+              bottom: 8,
+              right: 8,
+              padding: "2px 8px",
+              borderRadius: 999,
+              background: "rgba(30,19,22,0.8)",
+              color: "var(--text-hi)",
+              fontSize: "0.72rem",
+              fontWeight: 600,
+            }}
+          >
+            📷 {item.imageUrls!.length}
+          </span>
+        )}
       </div>
       <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
@@ -233,8 +251,8 @@ export default function LostFoundPage() {
 
   // form state
   const [form, setForm] = useState({ title: "", category: "electronics", location: "", dateLost: "", description: "" });
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [submitState, setSubmitState] = useState<"idle" | "busy" | "done" | "error">("idle");
   const [submitError, setSubmitError] = useState("");
 
@@ -270,14 +288,14 @@ export default function LostFoundPage() {
     try {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => fd.append(k, v));
-      if (photo) fd.append("photo", photo);
+      photos.forEach((p) => fd.append("photos", p));
       const res = await fetch("/api/lost-items", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to submit");
       setSubmitState("done");
       setForm({ title: "", category: "electronics", location: "", dateLost: "", description: "" });
-      setPhoto(null);
-      setPreview(null);
+      setPhotos([]);
+      setPreviews([]);
     } catch (err: any) {
       setSubmitError(err.message);
       setSubmitState("error");
@@ -345,21 +363,25 @@ export default function LostFoundPage() {
               </div>
               <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
                 <label className="cyber-btn cyber-btn--ghost" style={{ padding: "9px 16px", fontSize: "0.72rem", cursor: "pointer" }}>
-                  📷 {photo ? "Change photo" : "Add photo"}
+                  📷 {photos.length ? `Photos (${photos.length}/3)` : "Add photos"}
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
+                    multiple
                     style={{ display: "none" }}
                     onChange={(e) => {
-                      const f = e.target.files?.[0] ?? null;
-                      setPhoto(f);
-                      setPreview(f ? URL.createObjectURL(f) : null);
+                      const picked = Array.from(e.target.files ?? []).slice(0, 3);
+                      setPhotos(picked);
+                      setPreviews(picked.map((f) => URL.createObjectURL(f)));
                     }}
                   />
                 </label>
-                {preview && (
-                  <img src={preview} alt="preview" style={{ height: 64, borderRadius: 10, border: "1px solid rgba(217,164,91,0.35)" }} />
-                )}
+                {previews.map((src, i) => (
+                  <img key={i} src={src} alt={`preview ${i + 1}`} style={{ height: 64, borderRadius: 10, border: "1px solid rgba(217,164,91,0.35)" }} />
+                ))}
+                <span style={{ color: "var(--text-dim)", fontSize: "0.72rem" }}>
+                  Up to 3 · JPEG/PNG/WebP · max 3MB each
+                </span>
                 <button type="submit" className="cyber-btn" disabled={submitState === "busy"} style={{ marginLeft: "auto" }}>
                   {submitState === "busy" ? "Submitting..." : "Submit listing"}
                 </button>

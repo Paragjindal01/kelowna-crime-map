@@ -1,19 +1,9 @@
 import { NextResponse } from "next/server";
-import { writeFile } from "fs/promises";
-import path from "path";
-import crypto from "crypto";
 import prisma from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
 import { publicUser } from "@/lib/community";
 import { rateLimit, rateLimited } from "@/lib/ratelimit";
-
-const ALLOWED_TYPES: Record<string, string> = {
-  "image/jpeg": ".jpg",
-  "image/png": ".png",
-  "image/webp": ".webp",
-};
-
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+import { storeImage, ALLOWED_IMAGE_TYPES, MAX_IMAGES, MAX_IMAGE_BYTES } from "@/lib/blob";
 
 // Public listing: approved items only, contact info never exposed.
 export async function GET(request: Request) {
@@ -74,10 +64,32 @@ export async function POST(request: Request) {
     const description = String(form.get("description") ?? "").trim().slice(0, 1000);
     const location = String(form.get("location") ?? "").trim().slice(0, 120);
     const dateLost = String(form.get("dateLost") ?? "").trim();
-    const photo = form.get("photo");
 
     if (!title || !category || !location || !dateLost) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // Accept up to MAX_IMAGES files under "photos" (multi) or legacy "photo" (single).
+    const files = [...form.getAll("photos"), form.get("photo")].filter(
+      (f): f is File => f instanceof File && f.size > 0
+    );
+
+    if (files.length > MAX_IMAGES) {
+      return NextResponse.json(
+        { error: `Please upload at most ${MAX_IMAGES} images` },
+        { status: 400 }
+      );
+    }
+    for (const file of files) {
+      if (!ALLOWED_IMAGE_TYPES[file.type]) {
+        return NextResponse.json(
+          { error: "Photos must be JPEG, PNG, or WebP" },
+          { status: 400 }
+        );
+      }
+      if (file.size > MAX_IMAGE_BYTES) {
+        return NextResponse.json({ error: "Each photo must be under 3MB" }, { status: 400 });
+      }
     }
 
     // Duplicate guard: same user, same title in the last 10 minutes
@@ -95,24 +107,10 @@ export async function POST(request: Request) {
       );
     }
 
-    let imageUrl: string | null = null;
-
-    if (photo instanceof File && photo.size > 0) {
-      const ext = ALLOWED_TYPES[photo.type];
-      if (!ext) {
-        return NextResponse.json(
-          { error: "Photo must be a JPEG, PNG, or WebP image" },
-          { status: 400 }
-        );
-      }
-      if (photo.size > MAX_FILE_SIZE) {
-        return NextResponse.json({ error: "Photo must be under 5MB" }, { status: 400 });
-      }
-
-      const filename = `${crypto.randomBytes(12).toString("hex")}${ext}`;
-      const buffer = Buffer.from(await photo.arrayBuffer());
-      await writeFile(path.join(process.cwd(), "public", "uploads", filename), buffer);
-      imageUrl = `/uploads/${filename}`;
+    // Upload each image to Vercel Blob (or local dev fallback); store only URLs.
+    const imageUrls: string[] = [];
+    for (const file of files) {
+      imageUrls.push(await storeImage(file));
     }
 
     const item = await prisma.lostItem.create({
@@ -123,7 +121,8 @@ export async function POST(request: Request) {
         location,
         dateLost: new Date(dateLost),
         contact: user.email,
-        imageUrl,
+        imageUrl: imageUrls[0] ?? null,
+        imageUrls,
         ownerId: user.id,
         moderation: "pending",
       },

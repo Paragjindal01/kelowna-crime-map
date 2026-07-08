@@ -200,6 +200,7 @@ model LostItem {
   dateLost    DateTime
   contact     String
   imageUrl    String?
+  imageUrls   String[]       @default([])
   status      LostItemStatus @default(lost)
   moderation  Moderation     @default(pending)
   finderNote  String?
