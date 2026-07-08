@@ -60,7 +60,7 @@ export default function AboutPage() {
       <h2>Who builds this</h2>
       <p>
         GeoDASH is designed and developed by{" "}
-        <a href="https://www.instagram.com/Parag_jindl23/" target="_blank" rel="noopener noreferrer">
+        <a href="https://www.instagram.com/paragjindal23/" target="_blank" rel="noopener noreferrer">
           Parag Jindal
         </a>
         , with direction from the community — see the <a href="/roadmap">public roadmap</a> and

@@ -1,4 +1,4 @@
-const INSTAGRAM_URL = "https://www.instagram.com/Parag_jindl23/";
+const INSTAGRAM_URL = "https://www.instagram.com/paragjindal23/";
 
 export default function Footer() {
   return (
@@ -33,8 +33,8 @@ export default function Footer() {
             href={INSTAGRAM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Instagram @Parag_jindl23"
-            title="@Parag_jindl23"
+            aria-label="Instagram @paragjindal23"
+            title="@paragjindal23"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect x="2" y="2" width="20" height="20" rx="5.5" stroke="currentColor" strokeWidth="1.6" />

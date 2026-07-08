@@ -15,8 +15,8 @@ export default function ContactPage() {
       <h2>Platform questions &amp; feedback</h2>
       <p>
         Reach the creator on Instagram:{" "}
-        <a href="https://www.instagram.com/Parag_jindl23/" target="_blank" rel="noopener noreferrer">
-          @Parag_jindl23
+        <a href="https://www.instagram.com/paragjindal23/" target="_blank" rel="noopener noreferrer">
+          @paragjindal23
         </a>
       </p>
 
