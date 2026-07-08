@@ -266,6 +266,12 @@ export default function PublicMap() {
   const [daysBack, setDaysBack] = useState(365);
   const [keyword, setKeyword] = useState("");
   const [showAlerts, setShowAlerts] = useState(true);
+  const [legendOpen, setLegendOpen] = useState(true);
+
+  // Start collapsed on small screens so the sidebar stays compact.
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 700) setLegendOpen(false);
+  }, []);
 
   const mapRef = useRef<L.Map | null>(null);
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
@@ -476,15 +482,30 @@ export default function PublicMap() {
     );
   }
 
-  const legendItems = [
-    { label: "Vehicle Theft", type: "vehicle_theft" },
-    { label: "Break & Enter", type: "break_enter" },
-    { label: "Theft", type: "theft" },
-    { label: "Mischief", type: "mischief" },
-    { label: "Assault", type: "assault" },
-    { label: "Fraud", type: "fraud" },
-    { label: "Other", type: "other" },
-    { label: "Camera", type: "camera" },
+  const legendSections: { heading: string; items: { emoji: string; label: string; color: string }[] }[] = [
+    {
+      heading: "Incidents",
+      items: [
+        { emoji: "🚗", label: "Vehicle Theft", color: getMarkerColor("vehicle_theft") },
+        { emoji: "🏠", label: "Break & Enter", color: getMarkerColor("break_enter") },
+        { emoji: "🛍️", label: "Theft", color: getMarkerColor("theft") },
+        { emoji: "⚠️", label: "Mischief", color: getMarkerColor("mischief") },
+        { emoji: "🚨", label: "Assault", color: getMarkerColor("assault") },
+        { emoji: "💳", label: "Fraud", color: getMarkerColor("fraud") },
+        { emoji: "📍", label: "Other", color: getMarkerColor("other") },
+      ],
+    },
+    {
+      heading: "Community Alerts",
+      items: ["road_closure", "fire", "power_outage", "fallen_tree", "public_notice"].map((k) => {
+        const c = alertCategory(k);
+        return { emoji: c.emoji, label: c.label, color: c.color };
+      }),
+    },
+    {
+      heading: "Infrastructure",
+      items: [{ emoji: "📷", label: "Public Camera", color: getMarkerColor("camera") }],
+    },
   ];
 
   return (
@@ -661,42 +682,71 @@ export default function PublicMap() {
         )}
 
         <div style={{ flex: 1 }}>
-          <div className="cyber-label" style={{ marginBottom: 8 }}>
-            Legend
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {legendItems.map((item) => {
-              const color = getMarkerColor(item.type);
-              return (
-                <span
-                  key={item.type}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 7,
-                    padding: "5px 11px",
-                    borderRadius: 999,
-                    border: `1px solid ${color}55`,
-                    background: `${color}12`,
-                    fontSize: "0.85em",
-                    fontWeight: 600,
-                    color: "var(--text-hi)",
-                  }}
-                >
-                  <span
+          <button
+            onClick={() => setLegendOpen(!legendOpen)}
+            aria-expanded={legendOpen}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+              padding: 0,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              marginBottom: legendOpen ? 10 : 0,
+            }}
+          >
+            <span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "0.95rem", color: "var(--text-hi)" }}>
+              Map Legend
+            </span>
+            <span aria-hidden style={{ color: "var(--text-mid)", fontSize: "0.75rem" }}>
+              {legendOpen ? "▲" : "▼"}
+            </span>
+          </button>
+
+          {legendOpen && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {legendSections.map((section) => (
+                <div key={section.heading}>
+                  <div
                     style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: "50%",
-                      background: color,
-                      boxShadow: `0 0 8px ${color}`,
+                      fontSize: "0.72rem",
+                      fontWeight: 700,
+                      letterSpacing: "0.05em",
+                      textTransform: "uppercase",
+                      color: "var(--text-mid)",
+                      padding: "4px 0",
+                      borderBottom: "1px solid var(--glass-border)",
+                      marginBottom: 6,
                     }}
-                  />
-                  {item.label}
-                </span>
-              );
-            })}
-          </div>
+                  >
+                    {section.heading}
+                  </div>
+                  <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 4 }}>
+                    {section.items.map((item) => (
+                      <li key={item.label} style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                        <span
+                          aria-hidden
+                          style={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: "50%",
+                            background: item.color,
+                            border: "1.5px solid #fff",
+                            boxShadow: "0 0 0 1px var(--glass-border)",
+                            flexShrink: 0,
+                          }}
+                        />
+                        <span aria-hidden style={{ fontSize: "0.85rem", width: 20, textAlign: "center" }}>{item.emoji}</span>
+                        <span style={{ fontSize: "0.85rem", color: "var(--text-hi)" }}>{item.label}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div
