@@ -8,12 +8,6 @@ export const PLANNED_FEATURES = [
     description: "Dedicated pet alerts with photos, last-seen locations, and reunion tracking.",
   },
   {
-    key: "community_alerts",
-    icon: "📢",
-    title: "Community Alerts",
-    description: "Moderator-issued alerts for scams, road closures, and urgent neighbourhood notices.",
-  },
-  {
     key: "stolen_vehicles",
     icon: "🚗",
     title: "Stolen Vehicle Registry",
@@ -41,6 +35,7 @@ export const PLANNED_FEATURES = [
 
 export const LIVE_FEATURES = [
   { icon: "🗺️", title: "Live Safety Map", description: "Verified incident reports across Kelowna" },
+  { icon: "📢", title: "Community Alerts", description: "Road closures, hazards, outages & notices — shipped July 2026" },
   { icon: "🧺", title: "Lost & Found", description: "Post, find, and return lost items" },
   { icon: "💬", title: "Private Messaging", description: "Contact owners without sharing emails" },
   { icon: "🏆", title: "Community Reputation", description: "XP, levels, achievements & leaderboard" },
