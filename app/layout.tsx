@@ -16,10 +16,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, padding: 0, display: "flex", flexDirection: "column", height: "100vh" }}>
+      <body style={{ margin: 0, padding: 0, display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         <div className="cyber-bg" />
         <Navbar />
-        <div style={{ flex: 1, overflow: "hidden", position: "relative", zIndex: 1 }}>
+        {/* Natural document flow — pages scroll with the body and the footer
+            always comes after the content, never pinned over it. */}
+        <div style={{ flex: 1, position: "relative", zIndex: 1, minWidth: 0 }}>
           {children}
         </div>
         <Footer />

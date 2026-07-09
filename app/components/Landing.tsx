@@ -153,32 +153,38 @@ export default function Landing() {
   const features = [
     {
       icon: "🗺️",
-      title: "Live Safety Map",
-      body: "Verified incident reports across Kelowna on an interactive map — filter by type and time, see camera locations.",
+      title: "View local safety reports",
+      body: "Browse verified incident reports across Kelowna on an interactive map — filter by type, time, and area.",
       href: "/map",
       cta: "Open the map",
     },
     {
-      icon: "🧺",
-      title: "Lost & Found",
-      body: "Lost something at the beach, a winery, or downtown? Post it. Found something? Return it and earn community reputation.",
-      href: "/lost-found",
-      cta: "Browse items",
+      icon: "📢",
+      title: "Check community alerts",
+      body: "Road closures, fires, outages, hazards, and public notices — reviewed before they go live.",
+      href: "/alerts",
+      cta: "See alerts",
     },
     {
-      icon: "🏆",
-      title: "Community Reputation",
-      body: "Every approved report and returned item earns reputation. Climb the ranks on the community leaderboard.",
-      href: "/leaderboard",
-      cta: "See leaderboard",
+      icon: "📝",
+      title: "Submit a report",
+      body: "Witnessed an incident? Report it with an approximate location. Every report is reviewed before publishing.",
+      href: "/report",
+      cta: "Report an incident",
+    },
+    {
+      icon: "🧺",
+      title: "Post lost & found items",
+      body: "Lost something downtown or at the beach? Post it. Found something? Help return it to a neighbour.",
+      href: "/lost-found",
+      cta: "Browse items",
     },
   ];
 
   const steps = [
-    { n: "01", title: "Create an account", body: "Join the community in seconds — free for everyone in the Okanagan." },
-    { n: "02", title: "Report or post", body: "Submit a safety report or list a lost item with a photo." },
-    { n: "03", title: "Admin review", body: "Every submission is verified by moderators before going public." },
-    { n: "04", title: "Reunite & earn", body: "Neighbours respond through private messages. Returns earn XP and badges." },
+    { n: "01", title: "Community submits", body: "Neighbours submit safety reports, alerts, and lost & found posts." },
+    { n: "02", title: "Admin reviews", body: "Every submission is checked by moderators before publication." },
+    { n: "03", title: "Approved posts appear publicly", body: "Verified content shows on the map and boards for everyone." },
   ];
 
   return (
@@ -233,9 +239,37 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* FEATURES */}
+      {/* EMERGENCY NOTICE */}
+      <section style={{ maxWidth: 980, margin: "0 auto", padding: "26px 24px 0" }}>
+        <div
+          role="note"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: "12px 16px",
+            borderRadius: 8,
+            border: "1px solid #f0c8c4",
+            background: "#fdf3f2",
+            color: "var(--danger)",
+            fontWeight: 600,
+            fontSize: "0.95rem",
+          }}
+        >
+          <span aria-hidden>🚨</span>
+          For emergencies, always call 911. SafeKelowna is not an emergency service.
+        </div>
+      </section>
+
+      {/* WHAT YOU CAN DO */}
       <section style={{ maxWidth: 1080, margin: "0 auto", padding: "48px 24px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
+        <div className="reveal" style={{ textAlign: "center", marginBottom: 30 }}>
+          <div className="cyber-sub">What you can do</div>
+          <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.9rem", margin: "12px 0 0", color: "var(--text-hi)" }}>
+            Tools for a safer neighbourhood
+          </h2>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 18 }}>
           {features.map((f, i) => (
             <div key={f.title} className="glass-panel reveal" style={{ padding: 28, transitionDelay: `${i * 0.12}s` }}>
               <div style={{ fontSize: "2.2rem" }}>{f.icon}</div>
@@ -271,8 +305,8 @@ export default function Landing() {
       {/* HOW IT WORKS */}
       <section style={{ maxWidth: 1080, margin: "0 auto", padding: "10px 24px 56px" }}>
         <div className="reveal" style={{ textAlign: "center", marginBottom: 34 }}>
-          <div className="cyber-sub">How it works</div>
-          <h2 style={{ fontFamily: "var(--font-display)", fontSize: "2rem", margin: "12px 0 0", color: "var(--text-hi)" }}>
+          <div className="cyber-sub">How SafeKelowna works</div>
+          <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.9rem", margin: "12px 0 0", color: "var(--text-hi)" }}>
             From the community, for the community
           </h2>
         </div>
@@ -300,15 +334,10 @@ export default function Landing() {
       <section style={{ maxWidth: 860, margin: "0 auto", padding: "0 24px 70px" }}>
         <div
           className="glass-panel reveal"
-          style={{
-            padding: "44px 32px",
-            textAlign: "center",
-            background:
-              "linear-gradient(140deg, rgba(110, 46, 70, 0.45), rgba(38, 24, 28, 0.85) 60%), var(--bg-panel)",
-          }}
+          style={{ padding: "44px 32px", textAlign: "center" }}
         >
-          <h2 style={{ fontFamily: "var(--font-display)", fontSize: "2.1rem", margin: 0 }} className="cyber-title">
-            Join the neighbourhood watch, Okanagan style
+          <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.9rem", margin: 0 }} className="cyber-title">
+            Join your neighbours on SafeKelowna
           </h2>
           <p style={{ color: "var(--text-mid)", maxWidth: 520, margin: "16px auto 26px", lineHeight: 1.65 }}>
             Earn reputation for every verified report and every item you help return. Kelowna looks
@@ -323,7 +352,7 @@ export default function Landing() {
       {/* FOOTER */}
       <footer
         style={{
-          borderTop: "1px solid rgba(217, 164, 91, 0.15)",
+          borderTop: "1px solid var(--glass-border)",
           padding: "26px 24px 34px",
           textAlign: "center",
           color: "var(--text-dim)",

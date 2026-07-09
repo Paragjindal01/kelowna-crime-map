@@ -25,6 +25,7 @@ export default function Navbar() {
   const router = useRouter();
   const [me, setMe] = useState<Me>(null);
   const [loaded, setLoaded] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -32,6 +33,11 @@ export default function Navbar() {
       .then((d) => setMe(d.user))
       .catch(() => setMe(null))
       .finally(() => setLoaded(true));
+  }, [pathname]);
+
+  // Close the mobile menu whenever the route changes.
+  useEffect(() => {
+    setMenuOpen(false);
   }, [pathname]);
 
   const logout = async () => {
@@ -42,21 +48,8 @@ export default function Navbar() {
   };
 
   return (
-    <nav
-      style={{
-        position: "relative",
-        zIndex: 20,
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        gap: 12,
-        padding: "12px 22px",
-        background: "#ffffff",
-        borderBottom: "1px solid var(--glass-border)",
-        flexWrap: "wrap",
-      }}
-    >
-      <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 11 }}>
+    <nav className="site-nav">
+      <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 11, minWidth: 0 }}>
         <span
           aria-hidden
           style={{
@@ -69,19 +62,29 @@ export default function Navbar() {
             color: "#fff",
             fontSize: "1.1rem",
             fontWeight: 700,
+            flexShrink: 0,
           }}
         >
           ◈
         </span>
-        <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.1 }}>
-          <span className="cyber-title" style={{ fontSize: "1.2rem" }}>SafeKelowna</span>
-          <span style={{ fontSize: "0.66rem", color: "var(--text-mid)", letterSpacing: "0.02em" }}>
+        <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.1, minWidth: 0 }}>
+          <span className="cyber-title" style={{ fontSize: "1.15rem", whiteSpace: "nowrap" }}>SafeKelowna</span>
+          <span style={{ fontSize: "0.64rem", color: "var(--text-mid)", letterSpacing: "0.02em", whiteSpace: "nowrap" }}>
             Community Safety &amp; Local Alerts
           </span>
         </span>
       </Link>
 
-      <div style={{ display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap" }}>
+      <button
+        className="nav-toggle"
+        aria-label={menuOpen ? "Close menu" : "Open menu"}
+        aria-expanded={menuOpen}
+        onClick={() => setMenuOpen(!menuOpen)}
+      >
+        {menuOpen ? "✕" : "☰"}
+      </button>
+
+      <div className={`nav-links ${menuOpen ? "open" : ""}`}>
         {links.map((link) => {
           const active = pathname === link.href;
           return (
@@ -89,19 +92,15 @@ export default function Navbar() {
               key={link.href}
               href={link.href}
               style={{
-                padding: "7px 14px",
+                padding: "9px 14px",
                 borderRadius: 6,
                 textDecoration: "none",
-                fontSize: "0.82rem",
+                fontSize: "0.84rem",
                 fontWeight: 600,
                 letterSpacing: "0.01em",
-                textTransform: "none",
                 color: active ? "#ffffff" : "var(--text-mid)",
                 background: active ? "var(--primary)" : "transparent",
-                border: active
-                  ? "1px solid var(--primary)"
-                  : "1px solid transparent",
-                boxShadow: "none",
+                border: active ? "1px solid var(--primary)" : "1px solid transparent",
                 transition: "all 0.15s ease",
               }}
             >
@@ -120,7 +119,6 @@ export default function Navbar() {
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
-                marginLeft: 8,
                 padding: "4px 12px 4px 4px",
                 borderRadius: 999,
                 textDecoration: "none",
@@ -141,7 +139,7 @@ export default function Navbar() {
                     height: 20,
                     padding: "0 5px",
                     borderRadius: 999,
-                    background: "#c94f4f",
+                    background: "var(--danger)",
                     color: "#fff",
                     fontSize: "0.7rem",
                     fontWeight: 700,
@@ -154,7 +152,7 @@ export default function Navbar() {
             <button
               onClick={logout}
               className="cyber-btn cyber-btn--ghost"
-              style={{ padding: "7px 14px", fontSize: "0.7rem" }}
+              style={{ padding: "8px 14px", fontSize: "0.74rem" }}
             >
               Sign out
             </button>
@@ -162,8 +160,8 @@ export default function Navbar() {
         )}
 
         {loaded && !me && (
-          <Link href="/login" style={{ textDecoration: "none", marginLeft: 8 }}>
-            <span className="cyber-btn" style={{ padding: "8px 18px", fontSize: "0.72rem", display: "inline-block" }}>
+          <Link href="/login" style={{ textDecoration: "none" }}>
+            <span className="cyber-btn" style={{ padding: "9px 18px", fontSize: "0.76rem", display: "inline-block", width: "100%", textAlign: "center", boxSizing: "border-box" }}>
               Sign In
             </span>
           </Link>

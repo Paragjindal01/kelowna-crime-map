@@ -52,13 +52,21 @@ html,
 body {
   margin: 0;
   padding: 0;
-  height: 100%;
   background: var(--bg-deep);
   color: var(--text-hi);
   font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
+  /* never allow sideways scrolling on phones */
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
 }
 
 /* ---------- calm civic backdrop (no animation) ---------- */
@@ -386,7 +394,16 @@ body {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.22; /* keep the scene subtle so hero text stays readable */
+}
+
+/* soft white plate behind hero text for contrast on small screens */
+.hero-content::before {
+  content: "";
+  position: absolute;
+  inset: -8px -20px;
+  z-index: -1;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.82) 40%, rgba(255, 255, 255, 0) 75%);
 }
 
 .hero-scene svg {
@@ -682,6 +699,143 @@ body {
   .site-footer {
     justify-content: center;
     text-align: center;
+  }
+}
+
+/* ---------- responsive header / nav ---------- */
+.site-nav {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--glass-border);
+  flex-wrap: wrap;
+}
+
+.nav-links {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--text-hi);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+@media (max-width: 820px) {
+  .nav-toggle {
+    display: inline-flex;
+  }
+
+  .nav-links {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    padding: 10px 0 4px;
+    border-top: 1px solid var(--glass-border);
+    margin-top: 8px;
+  }
+
+  .nav-links.open {
+    display: flex;
+  }
+
+  .nav-links a,
+  .nav-links > * {
+    width: 100%;
+    text-align: left;
+  }
+}
+
+/* ---------- responsive map page ---------- */
+.map-shell {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  height: calc(100vh - 64px);
+  min-height: 480px;
+}
+
+.map-sidebar {
+  border-right: 1px solid var(--glass-border);
+  background: var(--bg-panel);
+  padding: 18px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.map-canvas {
+  position: relative;
+  min-width: 0;
+  height: 100%;
+}
+
+@media (max-width: 860px) {
+  .map-shell {
+    display: block;
+    height: auto;
+    min-height: 0;
+  }
+
+  .map-sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--glass-border);
+    overflow: visible;
+    max-width: 100%;
+  }
+
+  /* full-width, tall-but-not-fullscreen map on phones */
+  .map-canvas {
+    height: 65vh;
+    min-height: 380px;
+    width: 100%;
+  }
+}
+
+/* ---------- footer mobile stacking ---------- */
+@media (max-width: 640px) {
+  .site-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    text-align: left;
+    padding: 16px 18px 8px;
+  }
+
+  .site-footer__links {
+    gap: 10px 16px;
+  }
+
+  .site-footer__right {
+    align-self: flex-start;
+  }
+
+  .site-footer__disclaimer {
+    padding: 0 18px 16px;
+    font-size: 0.72rem;
+  }
+
+  .hero-content {
+    padding: 44px 18px;
   }
 }
 

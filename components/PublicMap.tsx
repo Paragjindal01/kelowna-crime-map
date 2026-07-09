@@ -509,22 +509,9 @@ export default function PublicMap() {
   ];
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "330px 1fr", height: "100%" }}>
-      {/* Sidebar */}
-      <aside
-        className="glass-panel"
-        style={{
-          borderRadius: 0,
-          borderTop: "none",
-          borderBottom: "none",
-          borderLeft: "none",
-          padding: 18,
-          overflow: "auto",
-          display: "flex",
-          flexDirection: "column",
-          gap: 16,
-        }}
-      >
+    <div className="map-shell">
+      {/* Sidebar — stacks above the map on mobile */}
+      <aside className="map-sidebar">
         <div>
           <h2 className="cyber-title" style={{ margin: 0, fontSize: "1.3rem" }}>
             SafeKelowna
@@ -769,8 +756,8 @@ export default function PublicMap() {
         </div>
       </aside>
 
-      {/* Map */}
-      <div style={{ position: "relative" }}>
+      {/* Map — full width on mobile, fills the column on desktop */}
+      <div className="map-canvas">
         <MapContainer
           center={kelownaCenter}
           zoom={12}
@@ -788,17 +775,6 @@ export default function PublicMap() {
 
           <MapSetup onReady={onMapReady} />
         </MapContainer>
-
-        {/* vignette overlay for depth */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            zIndex: 500,
-            pointerEvents: "none",
-            boxShadow: "none",
-          }}
-        />
       </div>
     </div>
   );
