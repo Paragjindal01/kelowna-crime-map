@@ -250,7 +250,7 @@ export default function LostFoundPage() {
   const [formOpen, setFormOpen] = useState(false);
 
   // form state
-  const [form, setForm] = useState({ title: "", category: "electronics", location: "", dateLost: "", description: "" });
+  const [form, setForm] = useState({ title: "", category: "electronics", location: "", dateLost: "", description: "", website: "" });
   const [photos, setPhotos] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [submitState, setSubmitState] = useState<"idle" | "busy" | "done" | "error">("idle");
@@ -301,7 +301,7 @@ export default function LostFoundPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to submit");
       setSubmitState("done");
-      setForm({ title: "", category: "electronics", location: "", dateLost: "", description: "" });
+      setForm({ title: "", category: "electronics", location: "", dateLost: "", description: "", website: "" });
       setPhotos([]);
       setPreviews([]);
       setShowPreview(false);
@@ -391,6 +391,9 @@ export default function LostFoundPage() {
                 <span style={{ color: "var(--text-dim)", fontSize: "0.72rem" }}>
                   Up to 3 · JPEG/PNG/WebP · max 3MB each
                 </span>
+                <div aria-hidden="true" style={{ position: "absolute", left: "-9999px", height: 0, overflow: "hidden" }}>
+                  <label>Website<input type="text" tabIndex={-1} autoComplete="off" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} /></label>
+                </div>
                 <button type="submit" className="cyber-btn" style={{ marginLeft: "auto" }}>
                   Preview listing
                 </button>

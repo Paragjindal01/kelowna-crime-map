@@ -4,7 +4,10 @@ import nodemailer from "nodemailer";
 // SMTP_PASS, SMTP_FROM). Without SMTP config the verification link is logged
 // to the server console so the flow still works in development.
 export async function sendVerificationEmail(to: string, name: string, token: string) {
-  const baseUrl = process.env.APP_URL || "http://localhost:3000";
+  // Never fall back to localhost in production — verification links would break.
+  const baseUrl =
+    process.env.APP_URL ||
+    (process.env.NODE_ENV === "production" ? "https://safekelowna.com" : "http://localhost:3000");
   const verifyUrl = `${baseUrl}/api/auth/verify?token=${token}`;
 
   if (!process.env.SMTP_HOST) {

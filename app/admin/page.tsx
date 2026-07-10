@@ -180,6 +180,18 @@ export default function AdminPage() {
     } catch (err: any) { alert(err.message); }
   };
 
+  // Moderation rename for inappropriate/impersonating display names.
+  const renameUser = async (id: string, current: string) => {
+    const name = prompt("New public display name for this member:", current);
+    if (!name || name === current) return;
+    try {
+      const res = await fetch(`/api/admin/users/${id}`, { method: "PATCH", headers: authHeaders, body: JSON.stringify({ name }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to rename user");
+      setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, name: data.name } : u)));
+    } catch (err: any) { alert(err.message); }
+  };
+
   // ---------- login gate ----------
   if (!isAuthorized) {
     return (
@@ -445,6 +457,7 @@ export default function AdminPage() {
                     </div>
                   </div>
                   <a href={`/profile/${u.id}`} target="_blank" rel="noopener noreferrer" className="cyber-btn cyber-btn--ghost" style={{ padding: "6px 12px", fontSize: "0.66rem", textDecoration: "none" }}>Profile</a>
+                  <button onClick={() => renameUser(u.id, u.name)} className="cyber-btn cyber-btn--ghost" style={{ padding: "6px 12px", fontSize: "0.66rem" }}>Rename</button>
                   {u.banned && <Badge text="banned" tone="red" />}
                   <button onClick={() => toggleBan(u.id, !u.banned)} className={`cyber-btn ${u.banned ? "cyber-btn--success" : "cyber-btn--danger"}`} style={{ padding: "6px 14px", fontSize: "0.68rem" }}>{u.banned ? "Unban" : "Ban"}</button>
                 </div>

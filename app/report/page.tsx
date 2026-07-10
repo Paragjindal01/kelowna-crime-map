@@ -27,7 +27,7 @@ const TYPE_LABELS: Record<string, string> = {
   harassment_threats: "Harassment / Threats",
 };
 
-const empty = { type: "vehicle_theft", occurredAt: "", address: "", description: "", lat: "", lng: "" };
+const empty = { type: "vehicle_theft", occurredAt: "", address: "", description: "", lat: "", lng: "", website: "" };
 
 export default function ReportPage() {
   const [formData, setFormData] = useState(empty);
@@ -164,7 +164,19 @@ export default function ReportPage() {
 
           <div>
             <label className="cyber-label" style={{ display: "block", marginBottom: 8 }}>Description</label>
-            <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Provide additional details…" rows={4} className="cyber-textarea" />
+            <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Provide additional details…" rows={4} className="cyber-textarea" maxLength={2000} />
+            <div style={{ fontSize: "0.78rem", color: "var(--text-dim)", marginTop: 6 }}>
+              Please don't include names, licence plates, phone numbers, medical details, or
+              accusations against identifiable people — describe the incident, not individuals.
+            </div>
+          </div>
+
+          {/* Honeypot — hidden from real users, bots tend to fill it */}
+          <div aria-hidden="true" style={{ position: "absolute", left: "-9999px", height: 0, overflow: "hidden" }}>
+            <label>
+              Website
+              <input type="text" name="website" tabIndex={-1} autoComplete="off" value={formData.website} onChange={handleChange} />
+            </label>
           </div>
 
           <button type="submit" className="cyber-btn" style={{ marginTop: 8 }}>Preview report</button>

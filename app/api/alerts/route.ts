@@ -46,6 +46,12 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
+
+    // Honeypot: hidden field that only bots fill. Pretend success.
+    if (typeof body.website === "string" && body.website.trim() !== "") {
+      return NextResponse.json({ ok: true }, { status: 201 });
+    }
+
     const category = String(body.category ?? "");
     const title = String(body.title ?? "").trim().slice(0, 100);
     const description = String(body.description ?? "").trim().slice(0, 1000);

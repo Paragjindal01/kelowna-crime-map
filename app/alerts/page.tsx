@@ -150,7 +150,7 @@ export default function AlertsPage() {
   const [query, setQuery] = useState("");
 
   const [formOpen, setFormOpen] = useState(false);
-  const [form, setForm] = useState({ category: "road_closure", title: "", location: "", description: "", severity: 2, lat: "", lng: "" });
+  const [form, setForm] = useState({ category: "road_closure", title: "", location: "", description: "", severity: 2, lat: "", lng: "", website: "" });
   const [submitState, setSubmitState] = useState<"idle" | "busy" | "done" | "error">("idle");
   const [submitError, setSubmitError] = useState("");
   const [showPreview, setShowPreview] = useState(false);
@@ -218,7 +218,7 @@ export default function AlertsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to submit");
       setSubmitState("done");
-      setForm({ category: "road_closure", title: "", location: "", description: "", severity: 2, lat: "", lng: "" });
+      setForm({ category: "road_closure", title: "", location: "", description: "", severity: 2, lat: "", lng: "", website: "" });
       setShowPreview(false);
     } catch (err: any) {
       setSubmitError(err.message);
@@ -300,6 +300,9 @@ export default function AlertsPage() {
                 />
               </div>
               <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "flex-end" }}>
+                <div aria-hidden="true" style={{ position: "absolute", left: "-9999px", height: 0, overflow: "hidden" }}>
+                  <label>Website<input type="text" tabIndex={-1} autoComplete="off" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} /></label>
+                </div>
                 <button type="submit" className="cyber-btn">Preview alert</button>
               </div>
             </form>

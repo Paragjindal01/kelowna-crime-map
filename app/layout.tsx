@@ -3,10 +3,33 @@ import "leaflet/dist/leaflet.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
-export const metadata = {
-  title: "SafeKelowna — Community Safety & Local Alerts",
+import type { Metadata } from "next";
+
+const SITE_URL = process.env.APP_URL || "https://safekelowna.com";
+
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "SafeKelowna — Community Safety & Local Alerts",
+    template: "%s — SafeKelowna",
+  },
   description:
     "SafeKelowna is an independent community safety platform for Kelowna and the Central Okanagan — a public safety map, local alerts, and lost & found. Powered by GeoDASH.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: "SafeKelowna",
+    title: "SafeKelowna — Community Safety & Local Alerts",
+    description:
+      "An independent community safety platform for Kelowna: public safety map, local alerts, and lost & found. Not affiliated with the RCMP or City of Kelowna.",
+    url: SITE_URL,
+  },
+  twitter: {
+    card: "summary",
+    title: "SafeKelowna — Community Safety & Local Alerts",
+    description:
+      "An independent community safety platform for Kelowna: public safety map, local alerts, and lost & found.",
+  },
 };
 
 export default function RootLayout({

@@ -6,7 +6,7 @@ export default function TermsPage() {
   return (
     <StaticPage title="Terms of Service" subtitle="The agreement governing your use of SafeKelowna" updated="July 6, 2026">
       <p>
-        These Terms of Service (&ldquo;Terms&rdquo;) govern your access to and use of Kelowna
+        These Terms of Service (&ldquo;Terms&rdquo;) govern your access to and use of
         SafeKelowna (&ldquo;SafeKelowna&rdquo;, &ldquo;the platform&rdquo;). By creating an account or
         using the platform, you agree to these Terms and to our{" "}
         <a href="/privacy">Privacy Policy</a> and <a href="/guidelines">Community Guidelines</a>.

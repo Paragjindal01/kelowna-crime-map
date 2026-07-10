@@ -16,13 +16,27 @@ export async function GET(request: Request) {
       return NextResponse.json(mine);
     }
 
+    // Public feed: approved reports only, public fields only. No account
+    // attribution (userId) and no internal fields are ever exposed here.
     const reports = await prisma.report.findMany({
-      where: {
-        status: "approved",
+      where: { status: "approved" },
+      orderBy: { occurredAt: "desc" },
+      take: 500,
+      select: {
+        id: true,
+        type: true,
+        status: true,
+        occurredAt: true,
+        lat: true,
+        lng: true,
+        address: true,
+        description: true,
         isVerified: true,
-      },
-      orderBy: {
-        occurredAt: "desc",
+        sourceName: true,
+        sourceUrl: true,
+        locationApproximate: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
     return NextResponse.json(reports);
@@ -47,6 +61,12 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const { type, occurredAt, address, description, lat, lng } = body;
+
+    // Honeypot: real users never fill this hidden field. Pretend success so
+    // bots don't learn they were caught.
+    if (typeof body.website === "string" && body.website.trim() !== "") {
+      return NextResponse.json({ ok: true }, { status: 201 });
+    }
 
     if (!type || !occurredAt || lat === undefined || lng === undefined) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
